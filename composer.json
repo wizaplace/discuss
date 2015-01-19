@@ -1,0 +1,23 @@
+{
+    "name"             : "wizacha/discuss",
+    "description"      : "A service to manage simple discussions",
+    "type"             : "library",
+    "minimum-stability": "dev",
+    "license"          : "proprietary",
+    "authors"          : [
+        {
+            "name" : "Wizacha Dev Team",
+            "email": "dev@wizacha.com"
+        }
+    ],
+    "require"          : {
+    },
+    "require-dev"          : {
+        "atoum/atoum": "~1.2"
+    },
+    "autoload"         : {
+        "psr-0": {
+            "": "src/"
+        }
+    }
+}
