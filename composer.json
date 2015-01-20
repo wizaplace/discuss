@@ -16,8 +16,8 @@
         "atoum/atoum": "~1.2"
     },
     "autoload"         : {
-        "psr-0": {
-            "": "src/"
+        "psr-4": {
+            "Wizacha\\Discuss\\": "src/"
         }
     }
 }
