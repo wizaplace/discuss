@@ -2,7 +2,7 @@
     "name"             : "wizacha/discuss",
     "description"      : "A service to manage simple discussions",
     "type"             : "library",
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "license"          : "proprietary",
     "authors"          : [
         {
@@ -11,6 +11,7 @@
         }
     ],
     "require"          : {
+        "doctrine/orm": "~2.4"
     },
     "require-dev"          : {
         "atoum/atoum": "~1.2"
