@@ -1,3 +1,4 @@
 vendor
 .idea
 config/local.php
+tests/junit.xml

@@ -3,15 +3,17 @@
 Small library to manage some discussions.
 
 
-### Installation ###
+## Installation ##
 
 Add following requirement in your `composer.json` file:
 *TODO*
 
-### Usage ###
+## Usage ##
 *TODO*
 
-### Development ###
+## Development ##
+
+### Doctrine ###
 If you want to use the doctrine CLI, you need to create file `config\local.php` returning
 an array with doctrine connexion parameters. Here an example for a *mysql* connection:
 
@@ -40,4 +42,10 @@ For more documentation about doctrine-cli, check
 [corresponding documentation](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/tools.html).
           
 ### Tests ###
-*TODO*
+
+All tests must be written under `tests` directory, with a path matching the class namespace
+relatively to `Wizacha\Discuss`. For example, the tests of `Wizacha\Discuss\Entity\Message.php`
+are written in file `tests\Entity\Message.php`.
+
+To run the tests: `composer run-tests`
+
