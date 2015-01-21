@@ -32,8 +32,9 @@ return [
 
 Then you can use following commands:
 
-* `php vendor/bin/discuss orm:schema-tool:update` To create or update the database tables.
-* `php vendor/bin/discuss orm:schema-tool:drop` Drop all tables related to discuss.
+* `php vendor/bin/discuss create` To create database tables (only if not previously created).
+* `php vendor/bin/discuss update` To create or update the database tables.
+* `php vendor/bin/discuss drop` Drop all tables related to discuss.
 
 ## Usage ##
 
@@ -65,7 +66,7 @@ Here some useful commands:
 For more documentation about doctrine-cli, check
 [corresponding documentation](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/tools.html).
 
-**Note:** You can use the alias `bin/discuss`.
+**Note:** For *usual* commands above, you can use the alias `bin/discuss`.
           
 ### Tests ###
 
