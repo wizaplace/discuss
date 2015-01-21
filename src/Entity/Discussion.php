@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Wizacha\Discuss\Entity\Discussion\Status;
 
 /**
  * Class Discussion
@@ -45,13 +46,13 @@ class Discussion implements DiscussionInterface
      * @var Discussion/Status
      * @Column(type="string", length=1)
      */
-    protected $status_initiator;
+    protected $status_initiator = Status::OPEN;
 
     /**
      * @var Discussion/Status
      * @Column(type="string", length=1)
      */
-    protected $status_recipient;
+    protected $status_recipient = Status::OPEN;
 
     /**
      * @inheritdoc
@@ -94,9 +95,9 @@ class Discussion implements DiscussionInterface
     }
 
     /**
-     * @inheritdoc
+     * @var $status_initiator
      */
-    public function setStatusInitiator($status_initiator)
+    private function setStatusInitiator($status_initiator)
     {
         $this->status_initiator = $status_initiator;
     }
@@ -110,9 +111,9 @@ class Discussion implements DiscussionInterface
     }
 
     /**
-     * @inheritdoc
+     * @var int $status_recipient
      */
-    public function setStatusRecipient($status_recipient)
+    private function setStatusRecipient($status_recipient)
     {
         $this->status_recipient = $status_recipient;
     }
@@ -123,5 +124,34 @@ class Discussion implements DiscussionInterface
     public function getStatusRecipient()
     {
         return $this->status_recipient;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function closeDiscussion()
+    {
+        $this->setStatusRecipient(Status::CLOSED);
+        $this->setStatusInitiator(Status::CLOSED);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hideDiscussion($user_id)
+    {
+        if ($this->getStatusRecipient() !== Status::CLOSED) {
+            return false;
+        }
+
+        if ($this->getRecipient() == $user_id) {
+            $this->setStatusRecipient(Status::HIDDEN);
+        } elseif ($this->getInitiator() == $user_id) {
+            $this->setStatusInitiator(Status::HIDDEN);
+        } else {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -9,24 +9,27 @@
 namespace Wizacha\Discuss\Entity;
 
 
-interface DiscussionInterface {
+interface DiscussionInterface
+{
     /**
      * @return int
      */
     public function getId();
 
     /**
-     * @param mixed $initiator
+     * @param int $initiator
+     * @return boolean
      */
     public function setInitiator($initiator);
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getInitiator();
 
     /**
      * @param int $recipient
+     * @return boolean
      */
     public function setRecipient($recipient);
 
@@ -36,23 +39,20 @@ interface DiscussionInterface {
     public function getRecipient();
 
     /**
-     * @param \Wizacha\Discuss\Entity\Discussion $status_initiator
-     */
-    public function setStatusInitiator($status_initiator);
-
-    /**
      * @return \Wizacha\Discuss\Entity\Discussion
      */
     public function getStatusInitiator();
 
+    public function closeDiscussion();
+
     /**
-     * @param \Wizacha\Discuss\Entity\Discussion $status_recipient
+     * @param $user_id
+     * @return mixed
      */
-    public function setStatusRecipient($status_recipient);
+    public function hideDiscussion($user_id);
 
     /**
      * @return \Wizacha\Discuss\Entity\Discussion
      */
     public function getStatusRecipient();
-
-} 
+}

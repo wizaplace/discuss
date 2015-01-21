@@ -42,27 +42,67 @@ class Discussion extends atoum\test
             ->isIdenticalTo($r);
     }
 
-    public function testStatusInitiator()
+    public function testCloseDiscussion()
     {
-        $i = DiscussionTest\Status::HIDDEN;
-
-        $dsc = new DiscussionTest();
-        $dsc->setStatusInitiator($i);
+        $d = new DiscussionTest();
 
         $this
-            ->string($dsc->getStatusInitiator())
-            ->isIdenticalTo($i);
+            ->string($d->getStatusRecipient())
+            ->isEqualTo($d->getStatusInitiator())
+            ->isEqualTo(DiscussionTest\Status::OPEN);
+
+        $d->closeDiscussion();
+
+        $this
+            ->string($d->getStatusRecipient())
+            ->isEqualTo($d->getStatusInitiator())
+            ->isEqualTo(DiscussionTest\Status::CLOSED);
+
     }
 
-    public function testStatusRecipient()
+    public function testHideDiscussionWithNonExistentUserReturnFalse()
     {
-        $i = DiscussionTest\Status::CLOSED;
+        $d = new DiscussionTest();
 
-        $dsc = new DiscussionTest();
-        $dsc->setStatusRecipient($i);
+        $d->setRecipient(1);
+        $d->setInitiator(2);
+        $d->closeDiscussion();
 
         $this
-            ->string($dsc->getStatusRecipient())
-            ->isIdenticalTo($i);
+            ->boolean($d->hideDiscussion(3))
+            ->isFalse();
+    }
+
+    public function testHideDiscussionWithExistentUserReturnTrue()
+    {
+        $d = new DiscussionTest();
+
+        $d->setRecipient(1);
+        $d->setInitiator(2);
+        $d->closeDiscussion();
+
+        $this
+            ->boolean($d->hideDiscussion(1))
+            ->isTrue();
+
+        $this
+            ->string($d->getStatusRecipient())
+            ->isEqualTo(DiscussionTest\Status::HIDDEN);
+
+        $this
+            ->string($d->getStatusInitiator())
+            ->isEqualTo(DiscussionTest\Status::CLOSED);
+    }
+
+    public function testHideOPENDiscussionReturnFalse()
+    {
+        $d = new DiscussionTest();
+
+        $d->setRecipient(1);
+        $d->setInitiator(2);
+
+        $this
+            ->boolean($d->hideDiscussion(1))
+            ->isFalse();
     }
 }
