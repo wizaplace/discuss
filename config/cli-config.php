@@ -5,8 +5,12 @@
  * @license     Proprietary
  */
 
+$file  = getcwd() . '/config/discuss.config.php';
+if( !is_readable($file)) {
+    echo "Missing file [$file]." . PHP_EOL;
+    exit(1);
+}
 
-$params = include(__DIR__ . '/local.php');
-$client = new Wizacha\Discuss\Client($params, true);
+$client = new Wizacha\Discuss\Client(include($file));
 
 return $client->getConsoleHelpers();
