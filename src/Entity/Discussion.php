@@ -46,13 +46,19 @@ class Discussion implements DiscussionInterface
      * @var Discussion/Status
      * @Column(type="string", length=1)
      */
-    protected $status_initiator = Status::OPEN;
+    protected $status_initiator = Status::DISPLAYED;
 
     /**
      * @var Discussion/Status
      * @Column(type="string", length=1)
      */
-    protected $status_recipient = Status::OPEN;
+    protected $status_recipient = Status::DISPLAYED;
+
+    /**
+     * @var bool
+     * @Column(type="boolean")
+     */
+    protected $open = true;
 
     /**
      * @inheritdoc
@@ -121,6 +127,22 @@ class Discussion implements DiscussionInterface
     /**
      * @inheritdoc
      */
+    public function setOpen($open)
+    {
+        $this->open = $open;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOpen()
+    {
+        return $this->open;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getStatusRecipient()
     {
         return $this->status_recipient;
@@ -129,21 +151,8 @@ class Discussion implements DiscussionInterface
     /**
      * @inheritdoc
      */
-    public function closeDiscussion()
-    {
-        $this->setStatusRecipient(Status::CLOSED);
-        $this->setStatusInitiator(Status::CLOSED);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function hideDiscussion($user_id)
     {
-        if ($this->getStatusRecipient() !== Status::CLOSED) {
-            return false;
-        }
-
         if ($this->getRecipient() == $user_id) {
             $this->setStatusRecipient(Status::HIDDEN);
         } elseif ($this->getInitiator() == $user_id) {

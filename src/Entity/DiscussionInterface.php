@@ -43,7 +43,15 @@ interface DiscussionInterface
      */
     public function getStatusInitiator();
 
-    public function closeDiscussion();
+    /**
+     * @return boolean
+     */
+    public function getOpen();
+
+    /**
+     * @param boolean $open
+     */
+    public function setOpen($open);
 
     /**
      * @param $user_id

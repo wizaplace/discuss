@@ -42,22 +42,19 @@ class Discussion extends atoum\test
             ->isIdenticalTo($r);
     }
 
-    public function testCloseDiscussion()
+    public function testOpen()
     {
         $d = new DiscussionTest();
 
         $this
-            ->string($d->getStatusRecipient())
-            ->isEqualTo($d->getStatusInitiator())
-            ->isEqualTo(DiscussionTest\Status::OPEN);
+            ->boolean($d->getOpen())
+            ->isTrue();
 
-        $d->closeDiscussion();
+        $d->setOpen(false);
 
         $this
-            ->string($d->getStatusRecipient())
-            ->isEqualTo($d->getStatusInitiator())
-            ->isEqualTo(DiscussionTest\Status::CLOSED);
-
+            ->boolean($d->getOpen())
+            ->isFalse();
     }
 
     public function testHideDiscussionWithNonExistentUserReturnFalse()
@@ -66,7 +63,6 @@ class Discussion extends atoum\test
 
         $d->setRecipient(1);
         $d->setInitiator(2);
-        $d->closeDiscussion();
 
         $this
             ->boolean($d->hideDiscussion(3))
@@ -79,7 +75,6 @@ class Discussion extends atoum\test
 
         $d->setRecipient(1);
         $d->setInitiator(2);
-        $d->closeDiscussion();
 
         $this
             ->boolean($d->hideDiscussion(1))
@@ -91,18 +86,6 @@ class Discussion extends atoum\test
 
         $this
             ->string($d->getStatusInitiator())
-            ->isEqualTo(DiscussionTest\Status::CLOSED);
-    }
-
-    public function testHideOPENDiscussionReturnFalse()
-    {
-        $d = new DiscussionTest();
-
-        $d->setRecipient(1);
-        $d->setInitiator(2);
-
-        $this
-            ->boolean($d->hideDiscussion(1))
-            ->isFalse();
+            ->isEqualTo(DiscussionTest\Status::DISPLAYED);
     }
 }

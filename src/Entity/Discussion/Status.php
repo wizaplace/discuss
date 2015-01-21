@@ -9,8 +9,8 @@ namespace Wizacha\Discuss\Entity\Discussion;
 
 use MyCLabs\Enum\Enum;
 
-class Status extends Enum {
-    const OPEN = 'O';
-    const CLOSED = 'C';
-    const HIDDEN = 'H';
+class Status extends Enum
+{
+    const DISPLAYED = 'D';
+    const HIDDEN    = 'H';
 }
