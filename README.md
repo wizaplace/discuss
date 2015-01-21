@@ -44,8 +44,8 @@ For more documentation about doctrine-cli, check
 ### Tests ###
 
 All tests must be written under `tests` directory, with a path matching the class namespace
-relatively to `Wizacha\Discuss`. For example, the tests of `Wizacha\Discuss\Entity\Message.php`
-are written in file `tests\Entity\Message.php`.
+relatively to `Wizacha`. For example, the tests of `Wizacha\Discuss\Entity\Message.php`
+are written in file `tests\Discuss\Entity\Message.php`.
 
 To run the tests: `composer run-tests`
 
