@@ -17,7 +17,7 @@
         "atoum/atoum": "~1.2"
     },
     "scripts"          :{
-        "run-tests": "vendor/atoum/atoum/bin/atoum -c tests/atoum.config.php -bf tests/bootstrap.php -d tests"
+        "run-tests": "vendor/atoum/atoum/bin/atoum -c tests/atoum.config.php -bf tests/bootstrap.php -d tests/Discuss"
     },
     "autoload"         : {
         "psr-4": {
