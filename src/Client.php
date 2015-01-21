@@ -28,7 +28,7 @@ class Client
      * @param bool  $isDevMode
      * @throws \Doctrine\ORM\ORMException
      */
-    public function __construct($params, $isDevMode)
+    public function __construct($params, $isDevMode = false)
     {
         $config = Setup::createAnnotationMetadataConfiguration([__DIR__ . '/Entity'], $isDevMode);
         $this->_entityManager = EntityManager::create($params, $config);

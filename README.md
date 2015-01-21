@@ -6,16 +6,17 @@ Small library to manage some discussions.
 ## Installation ##
 
 Add following requirement in your `composer.json` file:
-*TODO*
+```
+#!json
+{
+    "require" : {
+        "wizacha/discuss": "*"
+    }
+}
+```
 
-## Usage ##
-*TODO*
-
-## Development ##
-
-### Doctrine ###
-If you want to use the doctrine CLI, you need to create file `config\local.php` returning
-an array with doctrine connexion parameters. Here an example for a *mysql* connection:
+To initialize underlying database, you need to create file `config\discuss.config.php` returning
+an array with connexion parameters. Here an example for a *mysql* connection:
 
 ```
 #!php
@@ -29,6 +30,29 @@ return [
 ];
 ```
 
+Then you can use following commands:
+
+* `php vendor/bin/discuss orm:schema-tool:update` To create or update the database tables.
+* `php vendor/bin/discuss orm:schema-tool:drop` Drop all tables related to discuss.
+
+## Usage ##
+
+To start, you will have to create a `Wizacha\Discuss\Client` instance.
+You can easily use the `config\discuss.config.php` file created earlier.
+```
+#!php
+<?php
+$discuss = new \Wizacha\Discuss\Client(
+    include($path . '/config/discuss.config.php')
+);
+```
+
+## Development ##
+
+### Doctrine ###
+
+To use Doctrine CLI, you also need to create file `config\discuss.config.php`.
+
 For more documentation about drivers and related parameters, check
 [doctrine documentation](http://docs.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html).
 
@@ -40,6 +64,8 @@ Here some useful commands:
 
 For more documentation about doctrine-cli, check
 [corresponding documentation](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/tools.html).
+
+**Note:** You can use the alias `bin/discuss`.
           
 ### Tests ###
 
