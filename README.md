@@ -74,5 +74,7 @@ All tests must be written under `tests` directory, with a path matching the clas
 relatively to `Wizacha`. For example, the tests of `Wizacha\Discuss\Entity\Message.php`
 are written in file `tests\Discuss\Entity\Message.php`.
 
-To run the tests: `composer run-tests`
+To run the tests: `composer run-tests`.
 
+Execution of tests require the [SQLlite PDO Driver](http://php.net/manual/en/book.sqlite3.php).
+On *Debian* based system, you should be able to install it with `sudo apt-get install php5-sqlite`.

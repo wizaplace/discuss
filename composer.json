@@ -15,6 +15,7 @@
         "myclabs/php-enum": "~1.2"
     },
     "require-dev"      : {
+        "ext-sqlite3": "*",
         "atoum/atoum": "~1.2"
     },
     "scripts"          :{
