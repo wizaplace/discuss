@@ -44,7 +44,8 @@ class Message implements MessageInterface
 
     /**
      * @var \DateTime
-     * @Column(type="datetime")
+     * @Column(type="datetime", nullable=true)
+     * @null
      */
     protected $read_date;
 
@@ -102,7 +103,7 @@ class Message implements MessageInterface
     /**
      * @inheritdoc
      */
-    public function setDiscussion($discussion)
+    public function setDiscussion(DiscussionInterface $discussion)
     {
         $this->discussion = $discussion;
     }

@@ -55,4 +55,14 @@ interface MessageInterface
      * @return \DateTime
      */
     public function getReadDate();
+
+    /**
+     * @param \Wizacha\Discuss\Entity\DiscussionInterface $discussion
+     */
+    public function setDiscussion(DiscussionInterface $discussion);
+
+    /**
+     * @return \Wizacha\Discuss\Entity\DiscussionInterface
+     */
+    public function getDiscussion();
 }

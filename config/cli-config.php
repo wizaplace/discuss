@@ -11,6 +11,13 @@ if( !is_readable($file)) {
     exit(1);
 }
 
-$client = new Wizacha\Discuss\Client(include($file));
+class ClientWithHelpers extends Wizacha\Discuss\Client
+{
+    public function getConsoleHelpers()
+    {
+        return \Doctrine\ORM\Tools\Console\ConsoleRunner::createHelperSet($this->_entityManager);
+    }
+}
+$client = new ClientWithHelpers(include($file), true);
 
 return $client->getConsoleHelpers();

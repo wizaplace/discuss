@@ -69,7 +69,18 @@ class Discussion extends atoum\test
             ->isFalse();
     }
 
-    public function testHideDiscussionWithExistentUserReturnTrue()
+    public function HideDiscussionWithExistentUserReturnTrueData_Provider()
+    {
+        return [
+            [1, DiscussionTest\Status::HIDDEN, DiscussionTest\Status::DISPLAYED],
+            [2, DiscussionTest\Status::DISPLAYED, DiscussionTest\Status::HIDDEN],
+        ];
+    }
+
+    /**
+     * @dataProvider HideDiscussionWithExistentUserReturnTrueData_Provider
+     */
+    public function testHideDiscussionWithExistentUserReturnTrue($user_id, $exp_recipient_status, $exp_initiator_status)
     {
         $d = new DiscussionTest();
 
@@ -77,15 +88,15 @@ class Discussion extends atoum\test
         $d->setInitiator(2);
 
         $this
-            ->boolean($d->hideDiscussion(1))
+            ->boolean($d->hideDiscussion($user_id))
             ->isTrue();
 
         $this
             ->string($d->getStatusRecipient())
-            ->isEqualTo(DiscussionTest\Status::HIDDEN);
+            ->isEqualTo($exp_recipient_status);
 
         $this
             ->string($d->getStatusInitiator())
-            ->isEqualTo(DiscussionTest\Status::DISPLAYED);
+            ->isEqualTo($exp_initiator_status);
     }
 }

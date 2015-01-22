@@ -8,6 +8,7 @@
 namespace Wizacha\Discuss\Entity\tests\unit;
 
 use mageekguy\atoum;
+use Wizacha\Discuss\Entity\Discussion as DiscussionTest;
 use Wizacha\Discuss\Entity\Message as MessageTest;
 
 class Message extends atoum\test
@@ -71,12 +72,12 @@ class Message extends atoum\test
 
     public function testDiscussion()
     {
-        $discussion = 1;
+        $discussion = new DiscussionTest();
         $msg = new MessageTest();
         $msg->setDiscussion($discussion);
 
         $this
-            ->integer($msg->getDiscussion())
+            ->object($msg->getDiscussion())
             ->isIdenticalTo($discussion);
 
     }
