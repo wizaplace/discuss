@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 
 /**
@@ -56,7 +57,8 @@ class Message implements MessageInterface
     protected $content;
 
     /**
-     * @ManyToOne(targetEntity="Discussion")
+     * @ManyToOne(targetEntity="Discussion", cascade={"all"})
+     * @JoinColumn(nullable=false)
      */
     protected $discussion;
 
