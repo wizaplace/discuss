@@ -12,10 +12,10 @@ use Wizacha\Discuss\Tests\RepositoryTest;
 
 class MessageRepository extends RepositoryTest
 {
-    public function test_set_get_succeed()
+    public function test_createSaveGet_succeed()
     {
         $repo = (new Client())->getMessageRepository();
-        $msg = $repo->get();
+        $msg = $repo->create();
         $this->object($msg)->isInstanceOf('\Wizacha\Discuss\Entity\MessageInterface');
 
         $msg_data = [
@@ -33,6 +33,12 @@ class MessageRepository extends RepositoryTest
         $this->object($msg)->isInstanceOf('\Wizacha\Discuss\Entity\MessageInterface');
 
         $this->testEntityData($msg, $msg_data);
+    }
+
+    public function test_get_failIfNotExist()
+    {
+        $repo = (new Client())->getMessageRepository();
+        $this->variable($repo->get(3))->isNull();
     }
 
     public function test_getByDiscussion_FilterSucceed()

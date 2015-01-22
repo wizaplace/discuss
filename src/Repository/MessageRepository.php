@@ -39,16 +39,21 @@ class MessageRepository
     }
 
     /**
-     * @param integer $message_id If null, a new instance is created
+     * @param integer $message_id
      * @return \Wizacha\Discuss\Entity\MessageInterface | null
      * @throws \Exception
      */
-    public function get($message_id = null)
+    public function get($message_id)
     {
-        return
-            is_null($message_id) ?
-                new Message()
-                : $this->_repo->find($message_id);
+        return $this->_repo->find($message_id);
+    }
+
+    /**
+     * @return \Wizacha\Discuss\Entity\MessageInterface
+     */
+    public function create()
+    {
+        return new Message();
     }
 
     /**

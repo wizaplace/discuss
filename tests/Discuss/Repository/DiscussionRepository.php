@@ -12,10 +12,10 @@ use Wizacha\Discuss\Tests\RepositoryTest;
 
 class DiscussionRepository extends RepositoryTest
 {
-    public function test_set_get_succeed()
+    public function test_createSaveGet_succeed()
     {
         $repo = (new Client())->getDiscussionRepository();
-        $discu = $repo->get();
+        $discu = $repo->create();
         $this->object($discu)->isInstanceOf('\Wizacha\Discuss\Entity\DiscussionInterface');
 
 
@@ -36,6 +36,12 @@ class DiscussionRepository extends RepositoryTest
         $this->testEntityData($discu, $discu_data);
     }
 
+    public function test_get_failIfNotExist()
+    {
+        $repo = (new Client())->getDiscussionRepository();
+        $this->variable($repo->get(3))->isNull();
+    }
+
     public function test_getByUser_FilterSucceed()
     {
         $repo = (new Client())->getDiscussionRepository();
@@ -46,7 +52,7 @@ class DiscussionRepository extends RepositoryTest
             $recipient_id = $initiator_id + 1;
             foreach ([false, true] as $initiator_hidden) {
                 foreach ([false, true] as $recipient_hidden) {
-                    $discu      = $repo->get();
+                    $discu      = $repo->create();
                     $discu_data = [
                         'Initiator' => $initiator_id,
                         'Recipient' => $recipient_id,
