@@ -9,6 +9,7 @@ namespace Wizacha\Discuss\Repository;
 
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Entity\Discussion;
 use Wizacha\Discuss\Entity\DiscussionInterface;
@@ -77,23 +78,8 @@ class DiscussionRepository
      */
     public function getByUser($user_id, $nb_per_page = null, $page = null)
     {
-        $qb   = $this->_repo->createQueryBuilder('d');
-        $expr = $qb->expr();
-        $qb->where(
-            $expr->orX(
-                $expr->andX(
-                    $expr->eq('d.initiator', ':user_id'),
-                    $expr->eq('d.status_initiator', ':status')
-                ),
-                $expr->andX(
-                    $expr->eq('d.recipient', ':user_id'),
-                    $expr->eq('d.status_recipient', ':status')
-                )
-            )
-        )->setParameters([
-            'user_id' => $user_id,
-            'status'=> Discussion\Status::DISPLAYED
-        ]);
+        $qb   = $this->_repo->createQueryBuilder('Discussion');
+        $this->andWhereDiscussionUserIs($qb, $user_id);
 
         if ($nb_per_page > 0) {
             $qb->setMaxResults($nb_per_page);
@@ -103,5 +89,33 @@ class DiscussionRepository
         }
 
         return new Paginator($qb);
+    }
+
+
+    /**
+     * **INTERNAL USE ONLY**
+     * Modify a query to filter visible discussion of a user
+     *
+     * @param QueryBuilder $queryBuilder The table must be named 'Discussion'
+     * @param integer $user_id
+     * @return QueryBuilder
+     */
+    public function andWhereDiscussionUserIs(QueryBuilder $queryBuilder, $user_id)
+    {
+        $expr = $queryBuilder->expr();
+        return $queryBuilder->andWhere(
+            $expr->orX(
+                $expr->andX(
+                    $expr->eq('Discussion.initiator', ':user_id'),
+                    $expr->eq('Discussion.status_initiator', ':status')
+                ),
+                $expr->andX(
+                    $expr->eq('Discussion.recipient', ':user_id'),
+                    $expr->eq('Discussion.status_recipient', ':status')
+                )
+            )
+        )->setParameter('user_id', $user_id)
+        ->setParameter('status', Discussion\Status::DISPLAYED)
+        ;
     }
 }
