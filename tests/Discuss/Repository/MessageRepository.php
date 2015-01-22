@@ -7,28 +7,11 @@
 
 namespace Wizacha\Discuss\Repository\tests\unit;
 
-use mageekguy\atoum;
-use Wizacha\Discuss\Entity\MessageInterface;
 use Wizacha\Discuss\Tests\Client;
+use Wizacha\Discuss\Tests\RepositoryTest;
 
-class MessageRepository extends atoum\test
+class MessageRepository extends RepositoryTest
 {
-    protected function fillMessage(MessageInterface $msg, array $msg_data)
-    {
-        foreach($msg_data as $name => $data) {
-            $method = "set$name";
-            $msg->$method($data);
-        }
-    }
-
-    protected function testMessageData(MessageInterface $msg, array $msg_data)
-    {
-        foreach($msg_data as $name => $data) {
-            $method = "get$name";
-            $this->variable($msg->$method())->isIdenticalTo($data);
-        }
-    }
-
     public function test_set_get_succeed()
     {
         $repo = (new Client())->getMessageRepository();
@@ -40,7 +23,7 @@ class MessageRepository extends atoum\test
             'Content'   => 'This is a Content',
             'SendDate'  => new \DateTime(),
         ];
-        $this->fillMessage($msg, $msg_data);
+        $this->fillEntity($msg, $msg_data);
 
         $msg_id = $repo->save($msg);
         $this->integer($msg_id)->isGreaterThan(0);
@@ -48,6 +31,6 @@ class MessageRepository extends atoum\test
         $msg = $repo->get($msg_id);
         $this->object($msg)->isInstanceOf('\Wizacha\Discuss\Entity\MessageInterface');
 
-        $this->testMessageData($msg, $msg_data);
+        $this->testEntityData($msg, $msg_data);
     }
 }

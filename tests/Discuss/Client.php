@@ -29,6 +29,15 @@ class Client extends atoum\test
             ->isInstanceOf('\Wizacha\Discuss\Repository\MessageRepository')
         ;
     }
+
+    public function test_getDiscussionRepository_succeed()
+    {
+        $client = new \Wizacha\Discuss\Tests\Client();
+        $this
+            ->object($client->getDiscussionRepository())
+            ->isInstanceOf('\Wizacha\Discuss\Repository\DiscussionRepository')
+        ;
+    }
 }
 
 
