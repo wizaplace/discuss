@@ -70,6 +70,7 @@ class DiscussionRepository extends RepositoryTest
             }
         }
 
+        $result = [];
         foreach($repo->getByUser($user_id) as $d) {
             $result[] = $d->getId();
         }
@@ -82,12 +83,11 @@ class DiscussionRepository extends RepositoryTest
         $repo = (new Client())->getDiscussionRepository();
 
         for($i=0;$i<10;++$i) {
-            $d = $repo->get();
-            $this->fillEntity($d, ['Initiator' => 1, 'Recipient' => 1]);
-            $repo->save($d);
+            $repo->save($this->createDiscussion());
         }
 
-        $pager = $repo->getByUser(1);
+        $user_id = $this->createDiscussion()->getInitiator();
+        $pager = $repo->getByUser($user_id);
         $this->object($pager)->isInstanceOf('\Countable')->isInstanceOf('\Traversable');
         //Retrieve All
         $this->object($pager)
@@ -96,21 +96,21 @@ class DiscussionRepository extends RepositoryTest
         ;
 
         //Retrieve complete page
-        $pager = $repo->getByUser(1, 7);
+        $pager = $repo->getByUser($user_id, 7);
         $this->object($pager)
             ->hasSize(10)
             ->array(iterator_to_array($pager))->hasSize(7)
         ;
 
         //Retrieve incomplete page
-        $pager = $repo->getByUser(1, 7, 1);
+        $pager = $repo->getByUser($user_id, 7, 1);
         $this->object($pager)
             ->hasSize(10)
             ->array(iterator_to_array($pager))->hasSize(3)
         ;
 
         //Retrieve empty page
-        $pager = $repo->getByUser(1, 7, 2);
+        $pager = $repo->getByUser($user_id, 7, 2);
         $this->object($pager)
             ->hasSize(10)
             ->array(iterator_to_array($pager))->hasSize(0)
