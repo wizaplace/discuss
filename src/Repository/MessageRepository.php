@@ -9,6 +9,7 @@ namespace Wizacha\Discuss\Repository;
 
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Entity\MessageInterface;
 
@@ -38,16 +39,21 @@ class MessageRepository
     }
 
     /**
-     * @param integer $message_id If null, a new instance is created
+     * @param integer $message_id
      * @return \Wizacha\Discuss\Entity\MessageInterface | null
      * @throws \Exception
      */
-    public function get($message_id = null)
+    public function get($message_id)
     {
-        return
-            is_null($message_id) ?
-                new Message()
-                : $this->_repo->find($message_id);
+        return $this->_repo->find($message_id);
+    }
+
+    /**
+     * @return \Wizacha\Discuss\Entity\MessageInterface
+     */
+    public function create()
+    {
+        return new Message();
     }
 
     /**
@@ -59,5 +65,31 @@ class MessageRepository
         $this->_em->persist($message);
         $this->_em->flush();
         return $message->getId();
+    }
+
+    /**
+     * @param integer $discussion_id
+     * @param integer $nb_per_page
+     * @param integer $page Page index, starting at 0
+     * @return \Countable,\Traversable
+     */
+    public function getByDiscussion($discussion_id, $nb_per_page = null, $page = null)
+    {
+        $qb   = $this->_repo->createQueryBuilder('m');
+        $expr = $qb->expr();
+        $qb->where(
+            $expr->eq('m.discussion', ':discussion_id')
+        )->setParameters([
+            'discussion_id' => $discussion_id
+        ]);
+
+        if ($nb_per_page > 0) {
+            $qb->setMaxResults($nb_per_page);
+            if ($page > 0) {
+                $qb->setFirstResult($page * $nb_per_page);
+            }
+        }
+
+        return new Paginator($qb);
     }
 }

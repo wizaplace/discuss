@@ -39,16 +39,21 @@ class DiscussionRepository
     }
 
     /**
-     * @param integer $discussion_id If null, a new instance is created
+     * @param integer $discussion_id
      * @return \Wizacha\Discuss\Entity\DiscussionInterface | null
      * @throws \Exception
      */
-    public function get($discussion_id = null)
+    public function get($discussion_id)
     {
-        return
-            is_null($discussion_id) ?
-                new Discussion()
-                : $this->_repo->find($discussion_id);
+        return $this->_repo->find($discussion_id);
+    }
+
+    /**
+     * @return \Wizacha\Discuss\Entity\DiscussionInterface
+     */
+    public function create()
+    {
+        return new Discussion();
     }
 
     /**
