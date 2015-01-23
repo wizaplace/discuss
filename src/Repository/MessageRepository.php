@@ -136,4 +136,22 @@ class MessageRepository
 
         return (integer)$qb->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param integer $discussion_id
+     * @return Message|null
+     */
+    public function getLastOfDiscussion($discussion_id)
+    {
+        $qb   = $this->_repo->createQueryBuilder('m');
+        $expr = $qb->expr();
+        return $qb->where(
+            $expr->eq('m.discussion', ':discussion_id')
+        )
+            ->setParameter('discussion_id', $discussion_id)
+            ->orderBy('m.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

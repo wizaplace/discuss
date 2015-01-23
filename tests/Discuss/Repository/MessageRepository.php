@@ -135,4 +135,30 @@ class MessageRepository extends RepositoryTest
         ;
 
     }
+
+    public function test_getLastOfDiscussion_succeed()
+    {
+        $repo = (new Client())->getMessageRepository();
+        $d = $this->createDiscussion();
+        $last_id = null;
+        for($i=0;$i<10;++$i) {
+            $m = $this->createMessage($d);
+            $last_id = $repo->save($m);
+        }
+        $msg = $repo->getLastOfDiscussion($d->getId());
+        $this
+            ->object($msg)->isInstanceOf('\Wizacha\Discuss\Entity\Message')
+            ->integer($last_id)->isIdenticalTo($msg->getId())
+        ;
+    }
+
+    public function test_getLastOfDiscussion_fail()
+    {
+        $client = new Client();
+        $discussion_id = $client->getDiscussionRepository()->save($this->createDiscussion());
+        $msg = $client->getMessageRepository()->getLastOfDiscussion($discussion_id);
+        $this
+            ->variable($msg)->isNull()
+        ;
+    }
 }
