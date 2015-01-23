@@ -49,11 +49,28 @@ class Message extends atoum\test
         $msg = new MessageTest();
 
         $this
+            ->boolean($msg->isRead())->isFalse()
             ->object($msg->setReadDate($date))->isIdenticalTo($msg)
+            ->boolean($msg->isRead())->isTrue()
             ->datetime($msg->getReadDate())
             ->isIdenticalTo($date);
 
     }
+
+    public function test_setAsRead()
+    {
+        $beforeDate = new \DateTime();
+        $msg = new MessageTest();
+
+        $this
+            ->boolean($msg->isRead())->isFalse()
+            ->object($msg->setAsRead())->isIdenticalTo($msg)
+            ->boolean($msg->isRead())->isTrue()
+            ->boolean($beforeDate <= $msg->getReadDate())->isTrue()
+            ->boolean($msg->getReadDate() <= new \DateTime())->isTrue()
+        ;
+    }
+
 
     public function testContent()
     {

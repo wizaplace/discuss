@@ -61,6 +61,16 @@ interface MessageInterface
     public function getReadDate();
 
     /**
+     * @return boolean
+     */
+    public function isRead();
+
+    /**
+     * @return $this
+     */
+    public function setAsRead();
+
+    /**
      * @param \Wizacha\Discuss\Entity\DiscussionInterface $discussion
      * @return $this
      */

@@ -141,6 +141,23 @@ class Message implements MessageInterface
     /**
      * @inheritdoc
      */
+    public function isRead()
+    {
+        return null !== $this->read_date;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAsRead()
+    {
+        $this->read_date = new \DateTime();
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setSendDate($send_date)
     {
         $this->send_date = $send_date;
