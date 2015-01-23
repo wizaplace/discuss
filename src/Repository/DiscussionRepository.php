@@ -13,6 +13,7 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Entity\Discussion;
 use Wizacha\Discuss\Entity\DiscussionInterface;
+use Wizacha\Discuss\Entity\Discussion\Status;
 
 /**
  * Class DiscussionRepository
@@ -79,7 +80,7 @@ class DiscussionRepository
     public function getByUser($user_id, $nb_per_page = null, $page = null)
     {
         $qb   = $this->_repo->createQueryBuilder('Discussion');
-        $this->andWhereDiscussionUserIs($qb, $user_id);
+        $this->andWhereDiscussionFilter($qb, $user_id, new Status(Status::DISPLAYED));
 
         if ($nb_per_page > 0) {
             $qb->setMaxResults($nb_per_page);
@@ -97,25 +98,46 @@ class DiscussionRepository
      * Modify a query to filter visible discussion of a user
      *
      * @param QueryBuilder $queryBuilder The table must be named 'Discussion'
-     * @param integer $user_id
+     * @param integer $user_id  If null, all users are selected
+     * @param Discussion\Status $status If null, all status are selected
      * @return QueryBuilder
      */
-    public function andWhereDiscussionUserIs(QueryBuilder $queryBuilder, $user_id)
+    public function andWhereDiscussionFilter(QueryBuilder $queryBuilder, $user_id = null, Status $status = null)
     {
-        $expr = $queryBuilder->expr();
-        return $queryBuilder->andWhere(
-            $expr->orX(
-                $expr->andX(
-                    $expr->eq('Discussion.initiator', ':user_id'),
-                    $expr->eq('Discussion.status_initiator', ':status')
-                ),
-                $expr->andX(
-                    $expr->eq('Discussion.recipient', ':user_id'),
-                    $expr->eq('Discussion.status_recipient', ':status')
-                )
-            )
-        )->setParameter('user_id', $user_id)
-        ->setParameter('status', Discussion\Status::DISPLAYED)
-        ;
+        $expr       = $queryBuilder->expr();
+        $conditions = [];
+
+        if($user_id) {
+            $conditions[] = [
+                'initiator' => $expr->eq('Discussion.initiator', ':user_id'),
+                'recipient' => $expr->eq('Discussion.recipient', ':user_id'),
+            ];
+            $queryBuilder->setParameter('user_id', $user_id);
+        }
+
+        if($status) {
+            $conditions[] = [
+                'initiator' => $expr->eq('Discussion.status_initiator', ':status'),
+                'recipient' => $expr->eq('Discussion.status_recipient', ':status'),
+            ];
+            $queryBuilder->setParameter('status', $status);
+        }
+
+        switch(count($conditions)) {
+            case 1:
+                $queryBuilder->andWhere(
+                    $expr->orX($conditions[0]['initiator'], $conditions[0]['recipient'])
+                );
+                break;
+            case 2:
+                $queryBuilder->andWhere(
+                    $expr->orX(
+                        $expr->andX($conditions[0]['initiator'], $conditions[1]['initiator']),
+                        $expr->andX($conditions[0]['recipient'], $conditions[1]['recipient'])
+                    )
+                );
+                break;
+        }
+        return $queryBuilder;
     }
 }

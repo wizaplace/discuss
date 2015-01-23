@@ -13,6 +13,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Entity\MessageInterface;
+use Wizacha\Discuss\Entity\Discussion\Status;
 
 /**
  * Class MessageRepository
@@ -122,14 +123,15 @@ class MessageRepository
             ;
         }
 
-        $qb = $this->_d_repo->andWhereDiscussionUserIs(
+        $qb = $this->_d_repo->andWhereDiscussionFilter(
             $qb->join(
                 'm.discussion',
                 'Discussion',
                 Join::WITH,
                 $expr->eq('Discussion.id', 'm.discussion')
             ),
-            $user_id
+            $user_id,
+            new Status(Status::DISPLAYED)
         );
 
         return (integer)$qb->getQuery()->getSingleScalarResult();
