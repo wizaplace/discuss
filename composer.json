@@ -1,31 +1,32 @@
 {
-    "name"             : "wizacha/discuss",
-    "description"      : "A service to manage simple discussions",
-    "type"             : "library",
+    "name": "wizacha/discuss",
+    "description": "A service to manage simple discussions",
+    "type": "library",
     "minimum-stability": "stable",
-    "license"          : "proprietary",
-    "authors"          : [
+    "license": "proprietary",
+    "authors": [
         {
-            "name" : "Wizacha Dev Team",
+            "name": "Wizacha Dev Team",
             "email": "dev@wizacha.com"
         }
     ],
-    "require"          : {
+    "require": {
         "doctrine/orm": "~2.4",
-        "myclabs/php-enum": "~1.2"
+        "myclabs/php-enum": "~1.2",
+        "symfony/event-dispatcher": "^2.6.3"
     },
-    "require-dev"      : {
+    "require-dev": {
         "ext-sqlite3": "*",
         "atoum/atoum": "~1.2"
     },
-    "scripts"          :{
+    "scripts": {
         "run-tests": "vendor/atoum/atoum/bin/atoum -c tests/atoum.config.php -bf tests/bootstrap.php -d tests/Discuss"
     },
-    "bin"              : [
+    "bin": [
         "bin/discuss",
         "bin/discuss.php"
     ],
-    "autoload"         : {
+    "autoload": {
         "psr-4": {
             "Wizacha\\Discuss\\": "src/"
         }
