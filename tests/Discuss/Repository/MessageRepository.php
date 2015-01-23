@@ -98,4 +98,41 @@ class MessageRepository extends RepositoryTest
             ->array(iterator_to_array($pager))->hasSize(0)
         ;
     }
+
+    public function test_getUnreadCount_succeed()
+    {
+        $repo        = (new Client())->getMessageRepository();
+        $discussions = [
+            $this->createDiscussion(),
+            $this->createDiscussion(),
+        ];
+        $nb_discussion = count($discussions);
+
+        $nb_unread_per_disc = 4;
+        foreach($discussions as $d) {
+            for($i=0; $i< $nb_discussion * $nb_unread_per_disc; ++$i) {
+                $msg = $this->createMessage($d);
+                if($i % $nb_discussion) {
+                    $msg->setReadDate(new \DateTime());
+                }
+                $repo->save($msg);
+            }
+        }
+
+        $this
+            ->integer($repo->getUnreadCount(RepositoryTest::AUTHOR_ID))->isZero()
+            ->integer($repo->getUnreadCount(RepositoryTest::RECIPIENT_ID))->isIdenticalTo($nb_unread_per_disc * $nb_discussion)
+        ;
+        $discussion_id = reset($discussions)->getId();
+        $this
+            ->integer($repo->getUnreadCount(RepositoryTest::AUTHOR_ID, $discussion_id))->isZero()
+            ->integer($repo->getUnreadCount(RepositoryTest::RECIPIENT_ID, $discussion_id))->isIdenticalTo($nb_unread_per_disc)
+        ;
+        $unknown_id = 9999;
+        $this
+            ->integer($repo->getUnreadCount(RepositoryTest::AUTHOR_ID, $unknown_id))->isZero()
+            ->integer($repo->getUnreadCount(RepositoryTest::RECIPIENT_ID, $unknown_id))->isZero()
+        ;
+
+    }
 }

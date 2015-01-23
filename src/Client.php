@@ -44,8 +44,8 @@ class Client
         $config = Setup::createAnnotationMetadataConfiguration([__DIR__ . '/Entity'], $isDevMode);
         $this->_entityManager = EntityManager::create($params, $config);
 
-        $this->_messageRepo    = new MessageRepository($this->_entityManager);
         $this->_discussionRepo = new DiscussionRepository($this->_entityManager);
+        $this->_messageRepo    = new MessageRepository($this->_entityManager, $this->_discussionRepo);
     }
 
     /**

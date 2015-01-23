@@ -7,6 +7,7 @@
 
 namespace Wizacha\Discuss\Repository\tests\unit;
 
+use Wizacha\Discuss\Entity\Discussion\Status;
 use Wizacha\Discuss\Tests\Client;
 use Wizacha\Discuss\Tests\RepositoryTest;
 
@@ -42,11 +43,40 @@ class DiscussionRepository extends RepositoryTest
         $this->variable($repo->get(3))->isNull();
     }
 
-    public function test_getByUser_FilterSucceed()
+    public function test_getByUser_IsAnAlias()
     {
-        $repo = (new Client())->getDiscussionRepository();
+        $this->mockGenerator->orphanize('__construct');
+        $repo        = new \mock\Wizacha\Discuss\Repository\DiscussionRepository();
+        $user_id     = 1;
+        $nb_per_page = 2;
+        $page        = 3;
+        $result      = 4;
+        $atoum       = $this;
 
-        $user_id      = 1;
+        $repo->getMockController()->getAll =
+            function($_user_id, $status, $_nb_per_page, $_page)
+                use($user_id, $nb_per_page, $page, $result, $atoum)
+            {
+                $atoum
+                    ->integer($_user_id)->isIdenticalTo($user_id)
+                    ->variable($status->getValue())->isIdenticalTo(Status::DISPLAYED)
+                    ->integer($_nb_per_page)->isIdenticalTo($nb_per_page)
+                    ->integer($_page)->isIdenticalTo($page)
+                ;
+                return $result;
+            }
+        ;
+
+        $this->integer($repo->getByUser($user_id, $nb_per_page, $page))->isIdenticalTo($result);
+    }
+
+    /**
+     * @param \Wizacha\Discuss\Repository\DiscussionRepository $repo
+     * @param callable $filterCallback with following parameters $recipient_id, $initiator_id, $recipient_hidden, $initiator_hidden
+     * @return array Expected ids according to filter
+     */
+    public function _generateDataFor_getAll(\Wizacha\Discuss\Repository\DiscussionRepository $repo, $filterCallback)
+    {
         $expected_ids = [];
         foreach ([0, 1, 2] as $initiator_id) {
             $recipient_id = $initiator_id + 1;
@@ -66,25 +96,78 @@ class DiscussionRepository extends RepositoryTest
                     }
                     $id = $repo->save($discu);
 
-                    if(
-                        ($user_id == $recipient_id && !$recipient_hidden)
-                        || ($user_id == $initiator_id && !$initiator_hidden)
-                    ) {
+                    if($filterCallback($recipient_id, $initiator_id, $recipient_hidden, $initiator_hidden)) {
                         $expected_ids[] = $id;
                     }
                 }
             }
         }
+        return $expected_ids;
+    }
+
+    public function test_getAll_FilterByUserAndStatusSucceed()
+    {
+        $repo = (new Client())->getDiscussionRepository();
+
+        $user_id      = 1;
+        $expected_ids = $this->_generateDataFor_getAll(
+            $repo,
+            function($recipient_id, $initiator_id, $recipient_hidden, $initiator_hidden) use ($user_id) {
+                return
+                    ($user_id == $recipient_id && !$recipient_hidden)
+                    || ($user_id == $initiator_id && !$initiator_hidden)
+                ;
+            }
+        );
 
         $result = [];
-        foreach($repo->getByUser($user_id) as $d) {
+        foreach($repo->getAll($user_id, new Status(Status::DISPLAYED)) as $d) {
             $result[] = $d->getId();
         }
         sort($result);
         $this->array($result)->isIdenticalTo($expected_ids);
     }
 
-    public function test_getByUser_PaginationSucceed()
+    public function test_getAll_FilterByUserOnlySucceed()
+    {
+        $repo = (new Client())->getDiscussionRepository();
+
+        $user_id      = 1;
+        $expected_ids = $this->_generateDataFor_getAll(
+            $repo,
+            function($recipient_id, $initiator_id, $recipient_hidden, $initiator_hidden) use ($user_id) {
+                return in_array($user_id, [$recipient_id, $initiator_id]);
+            }
+        );
+
+        $result = [];
+        foreach($repo->getAll($user_id) as $d) {
+            $result[] = $d->getId();
+        }
+        sort($result);
+        $this->array($result)->isIdenticalTo($expected_ids);
+    }
+
+    public function test_getAll_FilterByStatusOnlySucceed()
+    {
+        $repo = (new Client())->getDiscussionRepository();
+
+        $expected_ids = $this->_generateDataFor_getAll(
+            $repo,
+            function($recipient_id, $initiator_id, $recipient_hidden, $initiator_hidden) {
+                return $recipient_hidden || $initiator_hidden;
+            }
+        );
+
+        $result = [];
+        foreach($repo->getAll(null, new Status(Status::HIDDEN)) as $d) {
+            $result[] = $d->getId();
+        }
+        sort($result);
+        $this->array($result)->isIdenticalTo($expected_ids);
+    }
+
+    public function test_getAll_PaginationSucceed()
     {
         $repo = (new Client())->getDiscussionRepository();
 
@@ -92,8 +175,7 @@ class DiscussionRepository extends RepositoryTest
             $repo->save($this->createDiscussion());
         }
 
-        $user_id = $this->createDiscussion()->getInitiator();
-        $pager = $repo->getByUser($user_id);
+        $pager = $repo->getAll();
         $this->object($pager)->isInstanceOf('\Countable')->isInstanceOf('\Traversable');
         //Retrieve All
         $this->object($pager)
@@ -102,21 +184,21 @@ class DiscussionRepository extends RepositoryTest
         ;
 
         //Retrieve complete page
-        $pager = $repo->getByUser($user_id, 7);
+        $pager = $repo->getAll(null, null, 7);
         $this->object($pager)
             ->hasSize(10)
             ->array(iterator_to_array($pager))->hasSize(7)
         ;
 
         //Retrieve incomplete page
-        $pager = $repo->getByUser($user_id, 7, 1);
+        $pager = $repo->getAll(null, null, 7, 1);
         $this->object($pager)
             ->hasSize(10)
             ->array(iterator_to_array($pager))->hasSize(3)
         ;
 
         //Retrieve empty page
-        $pager = $repo->getByUser($user_id, 7, 2);
+        $pager = $repo->getAll(null, null, 7, 2);
         $this->object($pager)
             ->hasSize(10)
             ->array(iterator_to_array($pager))->hasSize(0)

@@ -13,6 +13,10 @@ use Wizacha\Discuss\Entity\Message;
 
 class RepositoryTest extends atoum\test
 {
+    const AUTHOR_ID    = 51;
+    const INITIATOR_ID = self::AUTHOR_ID;
+    const RECIPIENT_ID = 1664;
+
     protected function fillEntity($entity, array $entity_data)
     {
         foreach($entity_data as $name => $data) {
@@ -31,6 +35,7 @@ class RepositoryTest extends atoum\test
 
     /**
      * Create a valid message that can be saved.
+     * The Author is RepositoryTest::AUTHOR_ID.
      * Use it if the content does not matter for the test
      * @param Discussion $discussion The discussion to set, if nul a new one is created
      * @return Message
@@ -39,7 +44,7 @@ class RepositoryTest extends atoum\test
     {
         $m = new Message();
         $this->fillEntity($m, [
-            'Author'    => 51,
+            'Author'    => self::AUTHOR_ID,
             'SendDate'  => new \DateTime(),
             'Content'   => 'This is a Content',
             'Discussion'=> $discussion ? : $this->createDiscussion()
@@ -49,6 +54,8 @@ class RepositoryTest extends atoum\test
 
     /**
      * Create a valid discussion that can be saved.
+     * The Initiator is RepositoryTest::INITIATOR_ID.
+     * The Recipient is RepositoryTest::RECIPIENT_ID.
      * Use it if the content does not matter for the test
      * @return Discussion
      */
@@ -56,8 +63,8 @@ class RepositoryTest extends atoum\test
     {
         $d = new Discussion();
         $this->fillEntity($d, [
-            'Initiator' => 51,
-            'Recipient' => 1664,
+            'Initiator' => self::INITIATOR_ID,
+            'Recipient' => self::RECIPIENT_ID,
         ]);
         return $d;
     }

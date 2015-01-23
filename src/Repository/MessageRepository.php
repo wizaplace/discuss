@@ -9,9 +9,11 @@ namespace Wizacha\Discuss\Repository;
 
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Entity\MessageInterface;
+use Wizacha\Discuss\Entity\Discussion\Status;
 
 /**
  * Class MessageRepository
@@ -30,12 +32,18 @@ class MessageRepository
     protected $_em;
 
     /**
+     * @var \Wizacha\Discuss\Repository\DiscussionRepository
+     */
+    protected $_d_repo;
+
+    /**
      * @param EntityManager $entityManager
      */
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager, DiscussionRepository $discussionRepository)
     {
-        $this->_em         = $entityManager;
-        $this->_repo = $entityManager->getRepository('\Wizacha\Discuss\Entity\Message');
+        $this->_em     = $entityManager;
+        $this->_repo   = $entityManager->getRepository('\Wizacha\Discuss\Entity\Message');
+        $this->_d_repo = $discussionRepository;
     }
 
     /**
@@ -91,5 +99,41 @@ class MessageRepository
         }
 
         return new Paginator($qb);
+    }
+
+    /**
+     * @param integer $user_id
+     * @param integer $discussion_id If set, scope is limited to this discussion
+     * @return int
+     */
+    public function getUnreadCount($user_id, $discussion_id = null)
+    {
+        $qb   = $this->_repo->createQueryBuilder('m');
+        $expr = $qb->expr();
+        $qb->select($expr->count('m.id'))
+            ->where($expr->neq('m.author', ':user_id'))
+            ->andWhere($expr->isNull('m.read_date'))
+            ->setParameters([
+                'user_id' => $user_id,
+            ])
+        ;
+        if($discussion_id > 0) {
+            $qb->andWhere($expr->eq('m.discussion', ':discussion_id'))
+                ->setParameter('discussion_id', $discussion_id)
+            ;
+        }
+
+        $qb = $this->_d_repo->andWhereDiscussionFilter(
+            $qb->join(
+                'm.discussion',
+                'Discussion',
+                Join::WITH,
+                $expr->eq('Discussion.id', 'm.discussion')
+            ),
+            $user_id,
+            new Status(Status::DISPLAYED)
+        );
+
+        return (integer)$qb->getQuery()->getSingleScalarResult();
     }
 }

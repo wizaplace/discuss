@@ -9,9 +9,11 @@ namespace Wizacha\Discuss\Repository;
 
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Entity\Discussion;
 use Wizacha\Discuss\Entity\DiscussionInterface;
+use Wizacha\Discuss\Entity\Discussion\Status;
 
 /**
  * Class DiscussionRepository
@@ -77,23 +79,23 @@ class DiscussionRepository
      */
     public function getByUser($user_id, $nb_per_page = null, $page = null)
     {
-        $qb   = $this->_repo->createQueryBuilder('d');
-        $expr = $qb->expr();
-        $qb->where(
-            $expr->orX(
-                $expr->andX(
-                    $expr->eq('d.initiator', ':user_id'),
-                    $expr->eq('d.status_initiator', ':status')
-                ),
-                $expr->andX(
-                    $expr->eq('d.recipient', ':user_id'),
-                    $expr->eq('d.status_recipient', ':status')
-                )
-            )
-        )->setParameters([
-            'user_id' => $user_id,
-            'status'=> Discussion\Status::DISPLAYED
-        ]);
+        return $this->getAll($user_id, new Status(Status::DISPLAYED), $nb_per_page, $page);
+    }
+
+    /**
+     * Allow to retrieve all discussion, with optionnal filters.
+     * For each filter, null value means *ALL*
+     *
+     * @param integer $user_id
+     * @param Status $status
+     * @param integer $nb_per_page
+     * @param integer $page
+     * @return Paginator
+     */
+    public function getAll($user_id = null, Status $status = null, $nb_per_page = null, $page = null)
+    {
+        $qb   = $this->_repo->createQueryBuilder('Discussion');
+        $this->andWhereDiscussionFilter($qb, $user_id, $status);
 
         if ($nb_per_page > 0) {
             $qb->setMaxResults($nb_per_page);
@@ -103,5 +105,54 @@ class DiscussionRepository
         }
 
         return new Paginator($qb);
+    }
+
+
+    /**
+     * **INTERNAL USE ONLY**
+     * Modify a query to filter visible discussion of a user
+     *
+     * @param QueryBuilder $queryBuilder The table must be named 'Discussion'
+     * @param integer $user_id  If null, all users are selected
+     * @param Discussion\Status $status If null, all status are selected
+     * @return QueryBuilder
+     */
+    public function andWhereDiscussionFilter(QueryBuilder $queryBuilder, $user_id = null, Status $status = null)
+    {
+        $expr       = $queryBuilder->expr();
+        $conditions = [];
+
+        if($user_id) {
+            $conditions[] = [
+                'initiator' => $expr->eq('Discussion.initiator', ':user_id'),
+                'recipient' => $expr->eq('Discussion.recipient', ':user_id'),
+            ];
+            $queryBuilder->setParameter('user_id', $user_id);
+        }
+
+        if($status) {
+            $conditions[] = [
+                'initiator' => $expr->eq('Discussion.status_initiator', ':status'),
+                'recipient' => $expr->eq('Discussion.status_recipient', ':status'),
+            ];
+            $queryBuilder->setParameter('status', $status);
+        }
+
+        switch(count($conditions)) {
+            case 1:
+                $queryBuilder->andWhere(
+                    $expr->orX($conditions[0]['initiator'], $conditions[0]['recipient'])
+                );
+                break;
+            case 2:
+                $queryBuilder->andWhere(
+                    $expr->orX(
+                        $expr->andX($conditions[0]['initiator'], $conditions[1]['initiator']),
+                        $expr->andX($conditions[0]['recipient'], $conditions[1]['recipient'])
+                    )
+                );
+                break;
+        }
+        return $queryBuilder;
     }
 }
