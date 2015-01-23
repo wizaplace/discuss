@@ -74,6 +74,7 @@ class Discussion implements DiscussionInterface
     public function setInitiator($initiator)
     {
         $this->initiator = $initiator;
+        return $this;
     }
 
     /**
@@ -90,6 +91,7 @@ class Discussion implements DiscussionInterface
     public function setRecipient($recipient)
     {
         $this->recipient = $recipient;
+        return $this;
     }
 
     /**
@@ -101,11 +103,13 @@ class Discussion implements DiscussionInterface
     }
 
     /**
-     * @var $status_initiator
+     * @param $status_initiator
+     * @return $this
      */
     private function setStatusInitiator($status_initiator)
     {
         $this->status_initiator = $status_initiator;
+        return $this;
     }
 
     /**
@@ -117,11 +121,13 @@ class Discussion implements DiscussionInterface
     }
 
     /**
-     * @var int $status_recipient
+     * @param $status_recipient
+     * @return $this
      */
     private function setStatusRecipient($status_recipient)
     {
         $this->status_recipient = $status_recipient;
+        return $this;
     }
 
     /**
@@ -130,6 +136,7 @@ class Discussion implements DiscussionInterface
     public function setOpen($open)
     {
         $this->open = $open;
+        return $this;
     }
 
     /**
@@ -157,10 +164,7 @@ class Discussion implements DiscussionInterface
             $this->setStatusRecipient(Status::HIDDEN);
         } elseif ($this->getInitiator() == $user_id) {
             $this->setStatusInitiator(Status::HIDDEN);
-        } else {
-            return false;
         }
-
-        return true;
+        return $this;
     }
 }
