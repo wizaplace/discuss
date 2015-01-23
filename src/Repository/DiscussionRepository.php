@@ -79,8 +79,23 @@ class DiscussionRepository
      */
     public function getByUser($user_id, $nb_per_page = null, $page = null)
     {
+        return $this->getAll($user_id, new Status(Status::DISPLAYED), $nb_per_page, $page);
+    }
+
+    /**
+     * Allow to retrieve all discussion, with optionnal filters.
+     * For each filter, null value means *ALL*
+     *
+     * @param integer $user_id
+     * @param Status $status
+     * @param integer $nb_per_page
+     * @param integer $page
+     * @return Paginator
+     */
+    public function getAll($user_id = null, Status $status = null, $nb_per_page = null, $page = null)
+    {
         $qb   = $this->_repo->createQueryBuilder('Discussion');
-        $this->andWhereDiscussionFilter($qb, $user_id, new Status(Status::DISPLAYED));
+        $this->andWhereDiscussionFilter($qb, $user_id, $status);
 
         if ($nb_per_page > 0) {
             $qb->setMaxResults($nb_per_page);
