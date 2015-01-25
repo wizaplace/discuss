@@ -8,36 +8,37 @@
 namespace Wizacha\Discuss\Repository;
 
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Wizacha\Discuss\Client;
 use Wizacha\Discuss\Entity\Discussion;
 use Wizacha\Discuss\Entity\DiscussionInterface;
 use Wizacha\Discuss\Entity\Discussion\Status;
+use Wizacha\Discuss\Internal\EntityManagerAware;
 
 /**
  * Class DiscussionRepository
  * @package Wizacha\Discuss\Repository
  */
-class DiscussionRepository
+class DiscussionRepository extends EntityManagerAware
 {
     /**
-     * @var \Doctrine\ORM\EntityRepository
+     * @var \Wizacha\Discuss\Client
      */
-    protected $_repo;
+    protected $_client;
 
     /**
-     * @var \Doctrine\ORM\EntityManager
+     * @param \Wizacha\Discuss\Client $client
      */
-    protected $_em;
-
-    /**
-     * @param EntityManager $entityManager
-     */
-    public function __construct(EntityManager $entityManager)
+    public function __construct(Client $client)
     {
-        $this->_em   = $entityManager;
-        $this->_repo = $entityManager->getRepository('\Wizacha\Discuss\Entity\Discussion');
+        $this->_client = $client;
+        parent::__construct($client->getEntityManager());
+    }
+
+    private function _getRepo()
+    {
+        return $this->getEntityManager()->getRepository('\Wizacha\Discuss\Entity\Discussion');
     }
 
     /**
@@ -47,7 +48,7 @@ class DiscussionRepository
      */
     public function get($discussion_id)
     {
-        return $this->_repo->find($discussion_id);
+        return $this->_getRepo()->find($discussion_id);
     }
 
     /**
@@ -64,8 +65,9 @@ class DiscussionRepository
      */
     public function save(DiscussionInterface $discussion)
     {
-        $this->_em->persist($discussion);
-        $this->_em->flush();
+        $em = $this->getEntityManager();
+        $em->persist($discussion);
+        $em->flush();
         return $discussion->getId();
     }
 
@@ -94,7 +96,7 @@ class DiscussionRepository
      */
     public function getAll($user_id = null, Status $status = null, $nb_per_page = null, $page = null)
     {
-        $qb   = $this->_repo->createQueryBuilder('Discussion');
+        $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
         $this->andWhereDiscussionFilter($qb, $user_id, $status);
 
         if ($nb_per_page > 0) {

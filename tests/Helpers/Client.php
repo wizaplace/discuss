@@ -26,7 +26,8 @@ class Client extends \Wizacha\Discuss\Client
             ],
             true
         );
-        $tool = new \Doctrine\ORM\Tools\SchemaTool($this->_entityManager);
-        $tool->createSchema($this->_entityManager->getMetadataFactory()->getAllMetadata());
+        $em   = $this->getEntityManager();
+        $tool = new \Doctrine\ORM\Tools\SchemaTool($em);
+        $tool->createSchema($em->getMetadataFactory()->getAllMetadata());
     }
 }

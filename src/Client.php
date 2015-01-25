@@ -9,6 +9,7 @@ namespace Wizacha\Discuss;
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
+use Wizacha\Discuss\Internal\EntityManagerAware;
 use Wizacha\Discuss\Repository\MessageRepository;
 use Wizacha\Discuss\Repository\DiscussionRepository;
 
@@ -17,13 +18,8 @@ use Wizacha\Discuss\Repository\DiscussionRepository;
  *
  * @package Wizacha\Discuss
  */
-class Client
+class Client extends EntityManagerAware
 {
-    /**
-     * @var EntityManager
-     */
-    protected $_entityManager;
-
     /**
      * @var \Doctrine\ORM\EntityRepository
      */
@@ -42,10 +38,11 @@ class Client
     public function __construct(array $params, $isDevMode = false)
     {
         $config = Setup::createAnnotationMetadataConfiguration([__DIR__ . '/Entity'], $isDevMode);
-        $this->_entityManager = EntityManager::create($params, $config);
+        $em = EntityManager::create($params, $config);
+        parent::__construct($em);
 
-        $this->_discussionRepo = new DiscussionRepository($this->_entityManager);
-        $this->_messageRepo    = new MessageRepository($this->_entityManager, $this->_discussionRepo);
+        $this->_discussionRepo = new DiscussionRepository($this);
+        $this->_messageRepo    = new MessageRepository($this);
     }
 
     /**
