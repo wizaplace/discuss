@@ -9,6 +9,7 @@ namespace Wizacha\Discuss;
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Wizacha\Discuss\Internal\EntityManagerAware;
 use Wizacha\Discuss\Repository\MessageRepository;
 use Wizacha\Discuss\Repository\DiscussionRepository;
@@ -31,6 +32,11 @@ class Client extends EntityManagerAware
     protected $_discussionRepo;
 
     /**
+     * @var \Symfony\Component\EventDispatcher\EventDispatcher
+     */
+    protected $_dispatcher;
+
+    /**
      * @param array $params Doctrine connection parameters
      * @param bool  $isDevMode
      * @throws \Doctrine\ORM\ORMException
@@ -43,6 +49,7 @@ class Client extends EntityManagerAware
 
         $this->_discussionRepo = new DiscussionRepository($this);
         $this->_messageRepo    = new MessageRepository($this);
+        $this->_dispatcher     = new EventDispatcher();
     }
 
     /**
@@ -59,5 +66,13 @@ class Client extends EntityManagerAware
     public function getDiscussionRepository()
     {
         return $this->_discussionRepo;
+    }
+
+    /**
+     * @return EventDispatcher
+     */
+    public function getEventDispatcher()
+    {
+        return $this->_dispatcher;
     }
 }

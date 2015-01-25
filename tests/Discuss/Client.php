@@ -38,6 +38,15 @@ class Client extends atoum\test
             ->isInstanceOf('\Wizacha\Discuss\Repository\DiscussionRepository')
         ;
     }
+
+    public function test_getEventDispatcher_succeed()
+    {
+        $client = new \Wizacha\Discuss\Tests\Client();
+        $this
+            ->object($client->getEventDispatcher())
+            ->isInstanceOf('\Symfony\Component\EventDispatcher\EventDispatcher')
+        ;
+    }
 }
 
 
