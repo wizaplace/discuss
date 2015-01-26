@@ -23,9 +23,9 @@ class Discussion extends atoum\test
         $i = 1;
 
         $dsc = new DiscussionTest();
-        $dsc->setInitiator($i);
 
         $this
+            ->object($dsc->setInitiator($i))->isIdenticalTo($dsc)
             ->integer($dsc->getInitiator())
             ->isIdenticalTo($i);
     }
@@ -35,9 +35,9 @@ class Discussion extends atoum\test
         $r = 1;
 
         $dsc = new DiscussionTest();
-        $dsc->setRecipient($r);
 
         $this
+            ->object($dsc->setRecipient($r))->isIdenticalTo($dsc)
             ->integer($dsc->getRecipient())
             ->isIdenticalTo($r);
     }
@@ -50,53 +50,54 @@ class Discussion extends atoum\test
             ->boolean($d->getOpen())
             ->isTrue();
 
-        $d->setOpen(false);
-
         $this
+            ->object($d->setOpen(false))->isIdenticalTo($d)
             ->boolean($d->getOpen())
             ->isFalse();
     }
 
-    public function testHideDiscussionWithNonExistentUserReturnFalse()
+    public function testHideDiscussionWithNonExistentUserDoNothing()
     {
-        $d = new DiscussionTest();
-
-        $d->setRecipient(1);
-        $d->setInitiator(2);
+        $d = (new DiscussionTest())
+            ->setRecipient(1)
+            ->setInitiator(2)
+        ;
 
         $this
-            ->boolean($d->hideDiscussion(3))
-            ->isFalse();
+            ->object($d->hideDiscussion(3))->isIdenticalTo($d)
+            ->string((string)$d->getStatusRecipient())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+            ->string((string)$d->getStatusInitiator())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+        ;
     }
 
-    public function HideDiscussionWithExistentUserReturnTrueData_Provider()
+    public function HideDiscussionWithExistentUserSucceed_DataProvider()
     {
         return [
-            [1, DiscussionTest\Status::HIDDEN, DiscussionTest\Status::DISPLAYED],
-            [2, DiscussionTest\Status::DISPLAYED, DiscussionTest\Status::HIDDEN],
+            [1, new DiscussionTest\Status(DiscussionTest\Status::HIDDEN), new DiscussionTest\Status(DiscussionTest\Status::DISPLAYED)],
+            [2, new DiscussionTest\Status(DiscussionTest\Status::DISPLAYED), new DiscussionTest\Status(DiscussionTest\Status::HIDDEN)],
         ];
     }
 
     /**
-     * @dataProvider HideDiscussionWithExistentUserReturnTrueData_Provider
+     * @dataProvider HideDiscussionWithExistentUserSucceed_DataProvider
      */
-    public function testHideDiscussionWithExistentUserReturnTrue($user_id, $exp_recipient_status, $exp_initiator_status)
+    public function testHideDiscussionWithExistentUserSucceed($user_id, $exp_recipient_status, $exp_initiator_status)
     {
-        $d = new DiscussionTest();
-
-        $d->setRecipient(1);
-        $d->setInitiator(2);
-
-        $this
-            ->boolean($d->hideDiscussion($user_id))
-            ->isTrue();
+        $d = (new DiscussionTest())
+            ->setRecipient(1)
+            ->setInitiator(2)
+        ;
 
         $this
-            ->string($d->getStatusRecipient())
+            ->object($d->hideDiscussion($user_id))
+            ->isIdenticalTo($d);
+
+        $this
+            ->object($d->getStatusRecipient())
             ->isEqualTo($exp_recipient_status);
 
         $this
-            ->string($d->getStatusInitiator())
+            ->object($d->getStatusInitiator())
             ->isEqualTo($exp_initiator_status);
     }
 }

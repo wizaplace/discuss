@@ -17,7 +17,7 @@ interface DiscussionInterface
 
     /**
      * @param int $initiator
-     * @return boolean
+     * @return $this
      */
     public function setInitiator($initiator);
 
@@ -28,7 +28,7 @@ interface DiscussionInterface
 
     /**
      * @param int $recipient
-     * @return boolean
+     * @return $this
      */
     public function setRecipient($recipient);
 
@@ -38,7 +38,7 @@ interface DiscussionInterface
     public function getRecipient();
 
     /**
-     * @return \Wizacha\Discuss\Entity\Discussion
+     * @return \Wizacha\Discuss\Entity\Discussion\Status
      */
     public function getStatusInitiator();
 
@@ -49,17 +49,19 @@ interface DiscussionInterface
 
     /**
      * @param boolean $open
+     * @return $this
      */
     public function setOpen($open);
 
     /**
-     * @param $user_id
-     * @return mixed
+     * Hide the discussion for a user. Do nothing if the user is not implied in discussion
+     * @param integer $user_id
+     * @return $this
      */
     public function hideDiscussion($user_id);
 
     /**
-     * @return \Wizacha\Discuss\Entity\Discussion
+     * @return \Wizacha\Discuss\Entity\Discussion\Status
      */
     public function getStatusRecipient();
 }

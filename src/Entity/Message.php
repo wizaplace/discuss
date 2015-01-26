@@ -76,6 +76,7 @@ class Message implements MessageInterface
     public function setAuthor($author)
     {
         $this->author = $author;
+        return $this;
     }
 
     /**
@@ -92,6 +93,7 @@ class Message implements MessageInterface
     public function setContent($content)
     {
         $this->content = $content;
+        return $this;
     }
 
     /**
@@ -108,6 +110,7 @@ class Message implements MessageInterface
     public function setDiscussion(DiscussionInterface $discussion)
     {
         $this->discussion = $discussion;
+        return $this;
     }
 
     /**
@@ -124,6 +127,7 @@ class Message implements MessageInterface
     public function setReadDate($read_date)
     {
         $this->read_date = $read_date;
+        return $this;
     }
 
     /**
@@ -137,9 +141,27 @@ class Message implements MessageInterface
     /**
      * @inheritdoc
      */
+    public function isRead()
+    {
+        return null !== $this->read_date;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAsRead()
+    {
+        $this->read_date = new \DateTime();
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setSendDate($send_date)
     {
         $this->send_date = $send_date;
+        return $this;
     }
 
     /**

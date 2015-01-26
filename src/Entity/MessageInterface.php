@@ -18,6 +18,7 @@ interface MessageInterface
 
     /**
      * @param int $author
+     * @return $this
      */
     public function setAuthor($author);
 
@@ -28,6 +29,7 @@ interface MessageInterface
 
     /**
      * @param string $content
+     * @return $this
      */
     public function setContent($content);
 
@@ -38,6 +40,7 @@ interface MessageInterface
 
     /**
      * @param \DateTime $send_date
+     * @return $this
      */
     public function setSendDate($send_date);
 
@@ -48,6 +51,7 @@ interface MessageInterface
 
     /**
      * @param \DateTime $read_date
+     * @return $this
      */
     public function setReadDate($read_date);
 
@@ -57,7 +61,18 @@ interface MessageInterface
     public function getReadDate();
 
     /**
+     * @return boolean
+     */
+    public function isRead();
+
+    /**
+     * @return $this
+     */
+    public function setAsRead();
+
+    /**
      * @param \Wizacha\Discuss\Entity\DiscussionInterface $discussion
+     * @return $this
      */
     public function setDiscussion(DiscussionInterface $discussion);
 

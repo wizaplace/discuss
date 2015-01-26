@@ -23,9 +23,9 @@ class Message extends atoum\test
     {
         $id = 1;
         $msg = new MessageTest();
-        $msg->setAuthor($id);
 
         $this
+            ->object($msg->setAuthor($id))->isIdenticalTo($msg)
             ->integer($msg->getAuthor())
             ->isIdenticalTo($id);
 
@@ -35,9 +35,9 @@ class Message extends atoum\test
     {
         $date = \DateTime::createFromFormat('d-m-Y H:i:s', '21-12-2012 01:02:03');
         $msg = new MessageTest();
-        $msg->setSendDate($date);
 
         $this
+            ->object($msg->setSendDate($date))->isIdenticalTo($msg)
             ->datetime($msg->getSendDate())
             ->isIdenticalTo($date);
 
@@ -47,13 +47,30 @@ class Message extends atoum\test
     {
         $date = \DateTime::createFromFormat('d-m-Y H:i:s', '21-12-2012 01:02:03');
         $msg = new MessageTest();
-        $msg->setReadDate($date);
 
         $this
+            ->boolean($msg->isRead())->isFalse()
+            ->object($msg->setReadDate($date))->isIdenticalTo($msg)
+            ->boolean($msg->isRead())->isTrue()
             ->datetime($msg->getReadDate())
             ->isIdenticalTo($date);
 
     }
+
+    public function test_setAsRead()
+    {
+        $beforeDate = new \DateTime();
+        $msg = new MessageTest();
+
+        $this
+            ->boolean($msg->isRead())->isFalse()
+            ->object($msg->setAsRead())->isIdenticalTo($msg)
+            ->boolean($msg->isRead())->isTrue()
+            ->boolean($beforeDate <= $msg->getReadDate())->isTrue()
+            ->boolean($msg->getReadDate() <= new \DateTime())->isTrue()
+        ;
+    }
+
 
     public function testContent()
     {
@@ -62,9 +79,9 @@ class Message extends atoum\test
         ce qui lui permet de penser à la cænogénèse de l'être dont il est question dans la cause ambiguë entendue à Moÿ,
         dans un capharnaüm qui, pense-t-il, diminue çà et là la qualité de son œuvre.</p>";
         $msg = new MessageTest();
-        $msg->setContent($content);
 
         $this
+            ->object($msg->setContent($content))->isIdenticalTo($msg)
             ->string($msg->getContent())
             ->isIdenticalTo($content);
 
@@ -74,9 +91,9 @@ class Message extends atoum\test
     {
         $discussion = new DiscussionTest();
         $msg = new MessageTest();
-        $msg->setDiscussion($discussion);
 
         $this
+            ->object($msg->setDiscussion($discussion))->isIdenticalTo($msg)
             ->object($msg->getDiscussion())
             ->isIdenticalTo($discussion);
 

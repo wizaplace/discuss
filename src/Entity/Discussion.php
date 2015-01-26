@@ -74,6 +74,7 @@ class Discussion implements DiscussionInterface
     public function setInitiator($initiator)
     {
         $this->initiator = $initiator;
+        return $this;
     }
 
     /**
@@ -90,6 +91,7 @@ class Discussion implements DiscussionInterface
     public function setRecipient($recipient)
     {
         $this->recipient = $recipient;
+        return $this;
     }
 
     /**
@@ -101,11 +103,13 @@ class Discussion implements DiscussionInterface
     }
 
     /**
-     * @var $status_initiator
+     * @param Status $status_initiator
+     * @return $this
      */
-    private function setStatusInitiator($status_initiator)
+    private function setStatusInitiator(Status $status_initiator)
     {
         $this->status_initiator = $status_initiator;
+        return $this;
     }
 
     /**
@@ -113,15 +117,17 @@ class Discussion implements DiscussionInterface
      */
     public function getStatusInitiator()
     {
-        return $this->status_initiator;
+        return new Status($this->status_initiator);
     }
 
     /**
-     * @var int $status_recipient
+     * @param Status $status_recipient
+     * @return $this
      */
-    private function setStatusRecipient($status_recipient)
+    private function setStatusRecipient(Status $status_recipient)
     {
         $this->status_recipient = $status_recipient;
+        return $this;
     }
 
     /**
@@ -130,6 +136,7 @@ class Discussion implements DiscussionInterface
     public function setOpen($open)
     {
         $this->open = $open;
+        return $this;
     }
 
     /**
@@ -145,7 +152,7 @@ class Discussion implements DiscussionInterface
      */
     public function getStatusRecipient()
     {
-        return $this->status_recipient;
+        return new Status($this->status_recipient);
     }
 
     /**
@@ -154,13 +161,10 @@ class Discussion implements DiscussionInterface
     public function hideDiscussion($user_id)
     {
         if ($this->getRecipient() == $user_id) {
-            $this->setStatusRecipient(Status::HIDDEN);
+            $this->setStatusRecipient(new Status(Status::HIDDEN));
         } elseif ($this->getInitiator() == $user_id) {
-            $this->setStatusInitiator(Status::HIDDEN);
-        } else {
-            return false;
+            $this->setStatusInitiator(new Status(Status::HIDDEN));
         }
-
-        return true;
+        return $this;
     }
 }
