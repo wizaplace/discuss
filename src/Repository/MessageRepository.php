@@ -11,9 +11,11 @@ namespace Wizacha\Discuss\Repository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Client;
+use Wizacha\Discuss\DiscussEvents;
 use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Entity\MessageInterface;
 use Wizacha\Discuss\Entity\Discussion\Status;
+use Wizacha\Discuss\Event\MessageEvent;
 use Wizacha\Discuss\Internal\EntityManagerAware;
 
 /**
@@ -68,6 +70,11 @@ class MessageRepository extends EntityManagerAware
         $em = $this->getEntityManager();
         $em->persist($message);
         $em->flush();
+
+        $this->_client->getEventDispatcher()->dispatch(
+            DiscussEvents::MESSAGE_NEW,
+            new MessageEvent($message)
+        );
         return $message->getId();
     }
 
