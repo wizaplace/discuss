@@ -73,15 +73,15 @@ class Discussion extends atoum\test
     public function HideDiscussionWithExistentUserSucceed_DataProvider()
     {
         return [
-            [1, DiscussionTest\Status::HIDDEN, DiscussionTest\Status::DISPLAYED],
-            [2, DiscussionTest\Status::DISPLAYED, DiscussionTest\Status::HIDDEN],
+            [1, new DiscussionTest\Status(DiscussionTest\Status::HIDDEN), new DiscussionTest\Status(DiscussionTest\Status::DISPLAYED)],
+            [2, new DiscussionTest\Status(DiscussionTest\Status::DISPLAYED), new DiscussionTest\Status(DiscussionTest\Status::HIDDEN)],
         ];
     }
 
     /**
      * @dataProvider HideDiscussionWithExistentUserSucceed_DataProvider
      */
-    public function testHideDiscussionWithExistentUserSucced($user_id, $exp_recipient_status, $exp_initiator_status)
+    public function testHideDiscussionWithExistentUserSucceed($user_id, $exp_recipient_status, $exp_initiator_status)
     {
         $d = (new DiscussionTest())
             ->setRecipient(1)
@@ -93,11 +93,11 @@ class Discussion extends atoum\test
             ->isIdenticalTo($d);
 
         $this
-            ->string($d->getStatusRecipient())
+            ->object($d->getStatusRecipient())
             ->isEqualTo($exp_recipient_status);
 
         $this
-            ->string($d->getStatusInitiator())
+            ->object($d->getStatusInitiator())
             ->isEqualTo($exp_initiator_status);
     }
 }

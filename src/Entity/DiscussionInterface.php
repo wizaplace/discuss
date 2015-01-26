@@ -38,7 +38,7 @@ interface DiscussionInterface
     public function getRecipient();
 
     /**
-     * @return \Wizacha\Discuss\Entity\Discussion
+     * @return \Wizacha\Discuss\Entity\Discussion\Status
      */
     public function getStatusInitiator();
 
@@ -61,7 +61,7 @@ interface DiscussionInterface
     public function hideDiscussion($user_id);
 
     /**
-     * @return \Wizacha\Discuss\Entity\Discussion
+     * @return \Wizacha\Discuss\Entity\Discussion\Status
      */
     public function getStatusRecipient();
 }
