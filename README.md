@@ -27,6 +27,7 @@ return [
     'user'     => '...',
     'password' => '...',
     'dbname'   => '...',
+    'port'     => '...',
 ];
 ```
 
@@ -46,6 +47,42 @@ You can easily use the `config\discuss.config.php` file created earlier.
 $discuss = new \Wizacha\Discuss\Client(
     include($path . '/config/discuss.config.php')
 );
+```
+
+Create a discussion:
+```
+#!php
+<?php
+$r = $discuss->getDiscussionRepository();
+$d = $r->create()
+    ->setInitiator(1)
+    ->setRecipient(2)
+;
+$r->save($d);
+```
+
+Create a message:
+```
+#!php
+<?php
+$r = $discuss->getMessageRepository();
+$m = $r->create()
+    ->setAuthor(1)
+    ->setSendData(new \DateTime())
+    ->setContent('My Content')
+    ->setDiscussion($d)
+;
+$r->save($m);
+```
+
+Retrieve all messages of a discussion:
+```
+#!php
+<?php
+$r = $discuss->getMessageRepository();
+foreach($r->getByDiscussion(1) as $m) {
+    echo $m->getContent();
+}
 ```
 
 ## Development ##
