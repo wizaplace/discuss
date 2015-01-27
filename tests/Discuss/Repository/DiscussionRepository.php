@@ -43,6 +43,19 @@ class DiscussionRepository extends RepositoryTest
         $this->variable($repo->get(3))->isNull();
     }
 
+    public function test_getIfUser_succeed()
+    {
+        $repo = (new Client())->getDiscussionRepository();
+        $d = $this->createDiscussion();
+        $id = $repo->save($d);
+
+        $this
+            ->integer($repo->getIfUser($id, $d->getInitiator())->getId())->isIdenticalTo($id)
+            ->integer($repo->getIfUser($id, $d->getRecipient())->getId())->isIdenticalTo($id)
+            ->variable($repo->getIfUser($id, 9999999))->isNull()
+        ;
+    }
+
     public function test_getByUser_IsAnAlias()
     {
         $this->mockGenerator->orphanize('__construct');
