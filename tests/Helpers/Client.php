@@ -13,17 +13,22 @@ namespace Wizacha\Discuss\Tests;
  */
 class Client extends \Wizacha\Discuss\Client
 {
-    public function __construct()
+    static public function getDefaultConfig()
+    {
+        return [
+            'user'     => '',
+            'password' => '',
+            'host'     => '',
+            'dbname'   => '',
+            'driver'   => 'pdo_sqlite',
+            'memory'   => true,
+        ];
+    }
+
+    public function __construct(array $config = null)
     {
         parent::__construct(
-            [
-                'user'     => '',
-                'password' => '',
-                'host'     => '',
-                'dbname'   => '',
-                'driver'   => 'pdo_sqlite',
-                'memory'   => true,
-            ],
+            $config ? : self::getDefaultConfig(),
             true
         );
         $em   = $this->getEntityManager();

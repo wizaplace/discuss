@@ -10,6 +10,7 @@ namespace Wizacha\Discuss;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Wizacha\Discuss\Internal\EntityManagerAware;
 use Wizacha\Discuss\Repository\MessageRepository;
 use Wizacha\Discuss\Repository\DiscussionRepository;
@@ -37,7 +38,9 @@ class Client extends EntityManagerAware
     protected $_dispatcher;
 
     /**
-     * @param array $params Doctrine connection parameters
+     * @param array $params Doctrine connection parameters.
+     * Optionally you can use these parameters:
+     *  * EventDispatcherInterface event_dispatcher The dispatcher to use
      * @param bool  $isDevMode
      * @throws \Doctrine\ORM\ORMException
      */
@@ -49,7 +52,12 @@ class Client extends EntityManagerAware
 
         $this->_discussionRepo = new DiscussionRepository($this);
         $this->_messageRepo    = new MessageRepository($this);
-        $this->_dispatcher     = new EventDispatcher();
+
+        if (isset($params['event_dispatcher']) && $params['event_dispatcher'] instanceof EventDispatcherInterface) {
+            $this->_dispatcher = $params['event_dispatcher'];
+        } else {
+            $this->_dispatcher = new EventDispatcher();
+        }
     }
 
     /**

@@ -22,12 +22,16 @@ an array with connexion parameters. Here an example for a *mysql* connection:
 #!php
 <?php
 return [
+    //Doctrine related parameters
     'driver'   => 'pdo_mysql',
     'host'     => '...',
     'user'     => '...',
     'password' => '...',
     'dbname'   => '...',
-    'port'     => '...',
+    'port'     => 1234,
+    
+    //Optional parameters
+    'event_dispatcher' => $dispatcher,
 ];
 ```
 

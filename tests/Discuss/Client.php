@@ -39,13 +39,34 @@ class Client extends atoum\test
         ;
     }
 
-    public function test_getEventDispatcher_succeed()
+    public function test_getEventDispatcher_defaultSucceed()
     {
         $client = new \Wizacha\Discuss\Tests\Client();
         $this
             ->object($client->getEventDispatcher())
             ->isInstanceOf('\Symfony\Component\EventDispatcher\EventDispatcher')
         ;
+    }
+
+    public function test_getEventDispatcher_injectionSucceed()
+    {
+        $config                     = \Wizacha\Discuss\Tests\Client::getDefaultConfig();
+        $config['event_dispatcher'] = new \mock\Symfony\Component\EventDispatcher\EventDispatcherInterface;
+        $client                     = new \Wizacha\Discuss\Tests\Client($config);
+
+        $this
+            ->object($client->getEventDispatcher())
+            ->isIdenticalTo($config['event_dispatcher']);
+    }
+
+    public function test_getEventDispatcher_injectionIgnored()
+    {
+        $config                     = \Wizacha\Discuss\Tests\Client::getDefaultConfig();
+        $config['event_dispatcher'] = 'This is NOT a dispatcher';
+        $client                     = new \Wizacha\Discuss\Tests\Client($config);
+        $this
+            ->object($client->getEventDispatcher())
+            ->isInstanceOf('\Symfony\Component\EventDispatcher\EventDispatcher');
     }
 }
 
