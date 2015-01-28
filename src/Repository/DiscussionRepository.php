@@ -52,6 +52,34 @@ class DiscussionRepository extends EntityManagerAware
     }
 
     /**
+     * Gets a discussion ONLY if including a specific user
+     * @param integer $discussion_id
+     * @param integer $user_id
+     * @return \Wizacha\Discuss\Entity\DiscussionInterface | null
+     * @throws \Exception
+     */
+    public function getIfUser($discussion_id, $user_id)
+    {
+        $qb   = $this->_repo->createQueryBuilder('Discussion');
+        $expr       = $qb->expr();
+
+        return $qb
+            ->where($expr->eq('Discussion.id', ':discussion_id'))
+            ->andWhere(
+                $expr->orX(
+                    $expr->eq('Discussion.initiator', ':user_id'),
+                    $expr->eq('Discussion.recipient', ':user_id')
+                )
+            )->setParameters(
+                [
+                    'discussion_id' => $discussion_id,
+                    'user_id'       => $user_id,
+                ]
+            )
+        ->getQuery()->getOneOrNullResult();
+    }
+
+    /**
      * @return \Wizacha\Discuss\Entity\DiscussionInterface
      */
     public function create()
