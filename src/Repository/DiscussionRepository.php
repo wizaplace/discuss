@@ -60,8 +60,8 @@ class DiscussionRepository extends EntityManagerAware
      */
     public function getIfUser($discussion_id, $user_id)
     {
-        $qb   = $this->_repo->createQueryBuilder('Discussion');
-        $expr       = $qb->expr();
+        $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
+        $expr = $qb->expr();
 
         return $qb
             ->where($expr->eq('Discussion.id', ':discussion_id'))
