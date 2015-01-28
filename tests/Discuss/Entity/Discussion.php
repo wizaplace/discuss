@@ -100,4 +100,42 @@ class Discussion extends atoum\test
             ->object($d->getStatusInitiator())
             ->isEqualTo($exp_initiator_status);
     }
+
+    public function test_setGetMetaData_succeed()
+    {
+        $meta_data = [
+            'key1'    => 'hello',
+            'key2'    => 'world',
+        ];
+        $d = new DiscussionTest();
+
+        foreach($meta_data as $existing_key => $value) {
+            $this
+                ->object($d->setMetaData($existing_key, $value))
+                ->isIdenticalTo($d)
+            ;
+        }
+
+        foreach($meta_data as $key => $value) {
+            $this
+                ->variable($d->getMetaData($key))
+                ->isIdenticalTo($value)
+            ;
+        }
+
+        $this
+            ->variable($d->getMetaData('Unknown key'))
+            ->isNull()
+        ;
+
+        reset($meta_data);
+        $existing_key = key($meta_data);
+        $new_value    = 'NEW';
+        $this
+            ->variable($d->getMetaData($existing_key))
+                ->isIdenticalTo($meta_data[$existing_key])
+            ->variable($d->setMetaData($existing_key, $new_value)->getMetaData($existing_key))
+                ->isIdenticalTo($new_value)
+        ;
+    }
 }
