@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
-use Wizacha\Discuss\Entity\Discussion\MetaData;
+use Wizacha\Discuss\Internal\Entity\MetaData;
 use Wizacha\Discuss\Entity\Discussion\Status;
 
 /**
@@ -64,7 +64,7 @@ class Discussion implements DiscussionInterface
 
     /**
      * @var MetaData[]
-     * @OneToMany(targetEntity="\Wizacha\Discuss\Entity\Discussion\MetaData", mappedBy="discussion", indexBy="key", cascade={"ALL"})
+     * @OneToMany(targetEntity="\Wizacha\Discuss\Internal\Entity\MetaData", mappedBy="discussion", indexBy="key", cascade={"ALL"})
      */
     protected $meta_data = [];
 

@@ -5,7 +5,7 @@
  * @license     Proprietary
  */
 
-namespace Wizacha\Discuss\Entity\Discussion;
+namespace Wizacha\Discuss\Internal\Entity;
 
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -17,7 +17,7 @@ use Wizacha\Discuss\Entity\DiscussionInterface;
 
 /**
  * Class MetaData
- * @package Wizacha\Discuss\Entity\Discussion
+ * @package Wizacha\Discuss\Internal\Entity
  * @Entity()
  * @Table(uniqueConstraints={@UniqueConstraint(name="unique_key_by_discussion", columns={"discussion_id", "key"})})
  */

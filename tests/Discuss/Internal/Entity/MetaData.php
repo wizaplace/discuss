@@ -5,10 +5,10 @@
  * @license     Proprietary
  */
 
-namespace Wizacha\Discuss\Entity\Discussion\tests\unit;
+namespace Wizacha\Discuss\Internal\Entity\tests\unit;
 
 use mageekguy\atoum;
-use Wizacha\Discuss\Entity\Discussion\MetaData as MetaDataTest;
+use Wizacha\Discuss\Internal\Entity\MetaData as MetaDataTest;
 
 class MetaData extends atoum\test
 {

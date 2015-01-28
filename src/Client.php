@@ -46,7 +46,13 @@ class Client extends EntityManagerAware
      */
     public function __construct(array $params, $isDevMode = false)
     {
-        $config = Setup::createAnnotationMetadataConfiguration([__DIR__ . '/Entity'], $isDevMode);
+        $config = Setup::createAnnotationMetadataConfiguration(
+            [
+                __DIR__ . '/Entity',
+                __DIR__ . '/Internal/Entity',
+            ],
+            $isDevMode
+        );
         $em = EntityManager::create($params, $config);
         parent::__construct($em);
 
