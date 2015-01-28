@@ -7,6 +7,7 @@
 
 namespace Wizacha\Discuss\Repository\tests\unit;
 
+use Wizacha\Discuss\DiscussEvents;
 use Wizacha\Discuss\Tests\Client;
 use Wizacha\Discuss\Tests\RepositoryTest;
 
@@ -160,5 +161,23 @@ class MessageRepository extends RepositoryTest
         $this
             ->variable($msg)->isNull()
         ;
+    }
+
+    public function test_save_triggerAnEvent()
+    {
+        $client = new Client();
+        $atoum  = $this;
+        $msg    = $this->createMessage();
+
+        $client->getEventDispatcher()->addListener(
+            DiscussEvents::MESSAGE_NEW,
+            function ($event) use ($atoum, $msg) {
+                $atoum
+                    ->object($event)->isInstanceOf('Wizacha\Discuss\Event\MessageEvent')
+                    ->object($event->getMessage())->isIdenticalTo($msg);
+            }
+        );
+
+        $client->getMessageRepository()->save($msg);
     }
 }

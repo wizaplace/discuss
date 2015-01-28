@@ -9,6 +9,9 @@ namespace Wizacha\Discuss;
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Wizacha\Discuss\Internal\EntityManagerAware;
 use Wizacha\Discuss\Repository\MessageRepository;
 use Wizacha\Discuss\Repository\DiscussionRepository;
 
@@ -17,13 +20,8 @@ use Wizacha\Discuss\Repository\DiscussionRepository;
  *
  * @package Wizacha\Discuss
  */
-class Client
+class Client extends EntityManagerAware
 {
-    /**
-     * @var EntityManager
-     */
-    protected $_entityManager;
-
     /**
      * @var \Doctrine\ORM\EntityRepository
      */
@@ -35,17 +33,31 @@ class Client
     protected $_discussionRepo;
 
     /**
-     * @param array $params Doctrine connection parameters
+     * @var \Symfony\Component\EventDispatcher\EventDispatcher
+     */
+    protected $_dispatcher;
+
+    /**
+     * @param array $params Doctrine connection parameters.
+     * Optionally you can use these parameters:
+     *  * EventDispatcherInterface event_dispatcher The dispatcher to use
      * @param bool  $isDevMode
      * @throws \Doctrine\ORM\ORMException
      */
     public function __construct(array $params, $isDevMode = false)
     {
         $config = Setup::createAnnotationMetadataConfiguration([__DIR__ . '/Entity'], $isDevMode);
-        $this->_entityManager = EntityManager::create($params, $config);
+        $em = EntityManager::create($params, $config);
+        parent::__construct($em);
 
-        $this->_discussionRepo = new DiscussionRepository($this->_entityManager);
-        $this->_messageRepo    = new MessageRepository($this->_entityManager, $this->_discussionRepo);
+        $this->_discussionRepo = new DiscussionRepository($this);
+        $this->_messageRepo    = new MessageRepository($this);
+
+        if (isset($params['event_dispatcher']) && $params['event_dispatcher'] instanceof EventDispatcherInterface) {
+            $this->_dispatcher = $params['event_dispatcher'];
+        } else {
+            $this->_dispatcher = new EventDispatcher();
+        }
     }
 
     /**
@@ -62,5 +74,13 @@ class Client
     public function getDiscussionRepository()
     {
         return $this->_discussionRepo;
+    }
+
+    /**
+     * @return EventDispatcher
+     */
+    public function getEventDispatcher()
+    {
+        return $this->_dispatcher;
     }
 }

@@ -8,42 +8,39 @@
 namespace Wizacha\Discuss\Repository;
 
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Wizacha\Discuss\Client;
+use Wizacha\Discuss\DiscussEvents;
 use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Entity\MessageInterface;
 use Wizacha\Discuss\Entity\Discussion\Status;
+use Wizacha\Discuss\Event\MessageEvent;
+use Wizacha\Discuss\Internal\EntityManagerAware;
 
 /**
  * Class MessageRepository
  * @package Wizacha\Discuss\Repository
  */
-class MessageRepository
+class MessageRepository extends EntityManagerAware
 {
     /**
-     * @var \Doctrine\ORM\EntityRepository
+     * @var \Wizacha\Discuss\Client
      */
-    protected $_repo;
+    protected $_client;
 
     /**
-     * @var \Doctrine\ORM\EntityManager
+     * @param \Wizacha\Discuss\Client $client
      */
-    protected $_em;
-
-    /**
-     * @var \Wizacha\Discuss\Repository\DiscussionRepository
-     */
-    protected $_d_repo;
-
-    /**
-     * @param EntityManager $entityManager
-     */
-    public function __construct(EntityManager $entityManager, DiscussionRepository $discussionRepository)
+    public function __construct(Client $client)
     {
-        $this->_em     = $entityManager;
-        $this->_repo   = $entityManager->getRepository('\Wizacha\Discuss\Entity\Message');
-        $this->_d_repo = $discussionRepository;
+        $this->_client = $client;
+        parent::__construct($client->getEntityManager());
+    }
+
+    private function _getRepo()
+    {
+        return $this->getEntityManager()->getRepository('\Wizacha\Discuss\Entity\Message');
     }
 
     /**
@@ -53,7 +50,7 @@ class MessageRepository
      */
     public function get($message_id)
     {
-        return $this->_repo->find($message_id);
+        return $this->_getRepo()->find($message_id);
     }
 
     /**
@@ -70,8 +67,14 @@ class MessageRepository
      */
     public function save(MessageInterface $message)
     {
-        $this->_em->persist($message);
-        $this->_em->flush();
+        $em = $this->getEntityManager();
+        $em->persist($message);
+        $em->flush();
+
+        $this->_client->getEventDispatcher()->dispatch(
+            DiscussEvents::MESSAGE_NEW,
+            new MessageEvent($message)
+        );
         return $message->getId();
     }
 
@@ -83,7 +86,7 @@ class MessageRepository
      */
     public function getByDiscussion($discussion_id, $nb_per_page = null, $page = null)
     {
-        $qb   = $this->_repo->createQueryBuilder('m');
+        $qb   = $this->_getRepo()->createQueryBuilder('m');
         $expr = $qb->expr();
         $qb->where(
             $expr->eq('m.discussion', ':discussion_id')
@@ -108,7 +111,7 @@ class MessageRepository
      */
     public function getUnreadCount($user_id, $discussion_id = null)
     {
-        $qb   = $this->_repo->createQueryBuilder('m');
+        $qb   = $this->_getRepo()->createQueryBuilder('m');
         $expr = $qb->expr();
         $qb->select($expr->count('m.id'))
             ->where($expr->neq('m.author', ':user_id'))
@@ -123,7 +126,7 @@ class MessageRepository
             ;
         }
 
-        $qb = $this->_d_repo->andWhereDiscussionFilter(
+        $qb = $this->_client->getDiscussionRepository()->andWhereDiscussionFilter(
             $qb->join(
                 'm.discussion',
                 'Discussion',
@@ -143,7 +146,7 @@ class MessageRepository
      */
     public function getLastOfDiscussion($discussion_id)
     {
-        $qb   = $this->_repo->createQueryBuilder('m');
+        $qb   = $this->_getRepo()->createQueryBuilder('m');
         $expr = $qb->expr();
         return $qb->where(
             $expr->eq('m.discussion', ':discussion_id')
