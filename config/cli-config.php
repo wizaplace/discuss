@@ -15,7 +15,7 @@ class ClientWithHelpers extends Wizacha\Discuss\Client
 {
     public function getConsoleHelpers()
     {
-        return \Doctrine\ORM\Tools\Console\ConsoleRunner::createHelperSet($this->_entityManager);
+        return \Doctrine\ORM\Tools\Console\ConsoleRunner::createHelperSet($this->getEntityManager());
     }
 }
 $client = new ClientWithHelpers(include($file), true);
