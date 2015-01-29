@@ -28,6 +28,15 @@ class DiscussionRepository extends RepositoryTest
 
         $this->fillEntity($discu, $discu_data);
 
+        $meta_data = [
+            'key1'  => 'hello',
+            'key2'  => 'world',
+        ];
+
+        foreach($meta_data as $key => $value) {
+            $discu->setMetaData($key, $value);
+        }
+
         $discu_id = $repo->save($discu);
         $this->integer($discu_id)->isGreaterThan(0);
 
@@ -35,6 +44,13 @@ class DiscussionRepository extends RepositoryTest
         $this->object($discu)->isInstanceOf('\Wizacha\Discuss\Entity\DiscussionInterface');
 
         $this->testEntityData($discu, $discu_data);
+
+        foreach($meta_data as $key => $value) {
+            $this
+                ->variable($discu->getMetaData($key, $value))
+                ->isIdenticalTo($value)
+            ;
+        }
     }
 
     public function test_get_failIfNotExist()

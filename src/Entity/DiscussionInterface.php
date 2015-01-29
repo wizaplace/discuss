@@ -64,4 +64,18 @@ interface DiscussionInterface
      * @return \Wizacha\Discuss\Entity\Discussion\Status
      */
     public function getStatusRecipient();
+
+    /**
+     * Gets value associated to a key, or null if not exists
+     * @param string $key
+     * @return string|null
+     */
+    public function getMetaData($key);
+
+    /**
+     * @param string $key
+     * @param string $value
+     * @return $this
+     */
+    public function setMetaData($key, $value);
 }
