@@ -8,12 +8,15 @@
 namespace Wizacha\Discuss\Entity;
 
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Wizacha\Discuss\Internal\Entity\MessageRecipient;
 
 /**
  * Class Message
@@ -44,13 +47,6 @@ class Message implements MessageInterface
     protected $send_date;
 
     /**
-     * @var \DateTime
-     * @Column(type="datetime", nullable=true)
-     * @null
-     */
-    protected $read_date;
-
-    /**
      * @var string
      * @Column(type="text")
      */
@@ -61,6 +57,17 @@ class Message implements MessageInterface
      * @JoinColumn(nullable=false)
      */
     protected $discussion;
+
+    /**
+     * @OneToMany(targetEntity="\Wizacha\Discuss\Internal\Entity\MessageRecipient", mappedBy="message", indexBy="user_id", cascade={"ALL"})
+     * @var MessageRecipient[]
+     */
+    protected $recipients;
+
+    public function __construct()
+    {
+        $this->recipients = new ArrayCollection;
+    }
 
     /**
      * @inheritdoc
@@ -76,7 +83,7 @@ class Message implements MessageInterface
     public function setAuthor($author)
     {
         $this->author = $author;
-        return $this;
+        return $this->_updateRecipients();
     }
 
     /**
@@ -110,7 +117,7 @@ class Message implements MessageInterface
     public function setDiscussion(DiscussionInterface $discussion)
     {
         $this->discussion = $discussion;
-        return $this;
+        return $this->_updateRecipients();
     }
 
     /**
@@ -126,7 +133,9 @@ class Message implements MessageInterface
      */
     public function setReadDate($read_date)
     {
-        $this->read_date = $read_date;
+        if (!$this->recipients->isEmpty()) {
+            $this->recipients->first()->setReadDate($read_date);
+        }
         return $this;
     }
 
@@ -135,7 +144,9 @@ class Message implements MessageInterface
      */
     public function getReadDate()
     {
-        return $this->read_date;
+        return $this->recipients->isEmpty() ?
+            null
+            : $this->recipients->first()->getReadDate();
     }
 
     /**
@@ -143,7 +154,9 @@ class Message implements MessageInterface
      */
     public function isRead()
     {
-        return null !== $this->read_date;
+        return $this->recipients->isEmpty() ?
+            false
+            : $this->recipients->first()->isRead();
     }
 
     /**
@@ -151,7 +164,9 @@ class Message implements MessageInterface
      */
     public function setAsRead()
     {
-        $this->read_date = new \DateTime();
+        if (!$this->recipients->isEmpty()) {
+            $this->recipients->first()->setAsRead();
+        }
         return $this;
     }
 
@@ -170,5 +185,19 @@ class Message implements MessageInterface
     public function getSendDate()
     {
         return $this->send_date;
+    }
+
+    /**
+     * @return $this
+     */
+    private function _updateRecipients()
+    {
+        if( is_null($this->author) || is_null($this->discussion)) {
+            $this->recipients->clear();
+        } else {
+            $recipient_id     = $this->discussion->getOtherUser($this->author);
+            $this->recipients[$recipient_id] = new MessageRecipient($this, $recipient_id);
+        }
+        return $this;
     }
 }

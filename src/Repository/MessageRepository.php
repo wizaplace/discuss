@@ -14,7 +14,6 @@ use Wizacha\Discuss\Client;
 use Wizacha\Discuss\DiscussEvents;
 use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Entity\MessageInterface;
-use Wizacha\Discuss\Entity\Discussion\Status;
 use Wizacha\Discuss\Event\MessageEvent;
 use Wizacha\Discuss\Internal\EntityManagerAware;
 
@@ -111,11 +110,17 @@ class MessageRepository extends EntityManagerAware
      */
     public function getUnreadCount($user_id, $discussion_id = null)
     {
-        $qb   = $this->_getRepo()->createQueryBuilder('m');
+        $repo = $this->getEntityManager()->getRepository('\Wizacha\Discuss\Internal\Entity\MessageRecipient');
+        $qb   = $repo->createQueryBuilder('r');
         $expr = $qb->expr();
-        $qb->select($expr->count('m.id'))
-            ->where($expr->neq('m.author', ':user_id'))
-            ->andWhere($expr->isNull('m.read_date'))
+        $qb->select($expr->count('r.id'))
+            ->where($expr->eq('r.user_id', ':user_id'))
+            ->andWhere($expr->isNull('r.read_date'))
+            ->join(
+                'r.message',
+                'm',
+                Join::WITH
+            )
             ->setParameters([
                 'user_id' => $user_id,
             ])
@@ -125,17 +130,6 @@ class MessageRepository extends EntityManagerAware
                 ->setParameter('discussion_id', $discussion_id)
             ;
         }
-
-        $qb = $this->_client->getDiscussionRepository()->andWhereDiscussionFilter(
-            $qb->join(
-                'm.discussion',
-                'Discussion',
-                Join::WITH,
-                $expr->eq('Discussion.id', 'm.discussion')
-            ),
-            $user_id,
-            new Status(Status::DISPLAYED)
-        );
 
         return (integer)$qb->getQuery()->getSingleScalarResult();
     }
