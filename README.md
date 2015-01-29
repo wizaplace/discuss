@@ -32,6 +32,7 @@ return [
     
     //Optional parameters
     'event_dispatcher' => $dispatcher,
+    'directory_cache' => '/tmp',
 ];
 ```
 

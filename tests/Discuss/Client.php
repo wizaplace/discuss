@@ -9,6 +9,14 @@ namespace Wizacha\Discuss\tests\unit;
 
 use mageekguy\atoum;
 
+class AccessConfiguration extends \Wizacha\Discuss\Client
+{
+    public function getConfiguration()
+    {
+        return $this->getEntityManager()->getConfiguration();
+    }
+}
+
 class Client extends atoum\test
 {
 
@@ -67,6 +75,36 @@ class Client extends atoum\test
         $this
             ->object($client->getEventDispatcher())
             ->isInstanceOf('\Symfony\Component\EventDispatcher\EventDispatcher');
+    }
+
+    public function test_useFileCacheForProd()
+    {
+        $config = \Wizacha\Discuss\Tests\Client::getDefaultConfig();
+        $client = new AccessConfiguration($config);
+        $config = $client->getConfiguration();
+        $directory = sys_get_temp_dir();
+        $this
+            ->object($config->getResultCacheImpl())->isInstanceOf('Doctrine\Common\Cache\ArrayCache')
+            ->object($config->getMetadataCacheImpl())->isInstanceOf('Doctrine\Common\Cache\FileSystemCache')
+                ->string($config->getMetadataCacheImpl()->getDirectory())->isEqualTo($directory)
+            ->object($config->getQueryCacheImpl())->isInstanceOf('Doctrine\Common\Cache\FileSystemCache')
+                ->string($config->getQueryCacheImpl()->getDirectory())->isEqualTo($directory)
+        ;
+    }
+
+    public function test_useFileCacheUseCorrectDirectory()
+    {
+        $config                     = \Wizacha\Discuss\Tests\Client::getDefaultConfig();
+        $config['directory_cache'] = $directory = sys_get_temp_dir().'/test';
+        $client                     = new AccessConfiguration($config);
+        $config                     = $client->getConfiguration();
+        $this
+            ->object($config->getResultCacheImpl())->isInstanceOf('Doctrine\Common\Cache\ArrayCache')
+            ->object($config->getMetadataCacheImpl())->isInstanceOf('Doctrine\Common\Cache\FileSystemCache')
+                ->string($config->getMetadataCacheImpl()->getDirectory())->isEqualTo($directory)
+            ->object($config->getQueryCacheImpl())->isInstanceOf('Doctrine\Common\Cache\FileSystemCache')
+                ->string($config->getQueryCacheImpl()->getDirectory())->isEqualTo($directory)
+        ;
     }
 }
 

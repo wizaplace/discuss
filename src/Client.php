@@ -7,6 +7,8 @@
 
 namespace Wizacha\Discuss;
 
+use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Cache\FilesystemCache;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -41,18 +43,28 @@ class Client extends EntityManagerAware
      * @param array $params Doctrine connection parameters.
      * Optionally you can use these parameters:
      *  * EventDispatcherInterface event_dispatcher The dispatcher to use
+     *  * string directory_cache path for directory use for cache
      * @param bool  $isDevMode
      * @throws \Doctrine\ORM\ORMException
      */
     public function __construct(array $params, $isDevMode = false)
     {
+        $cache = null;
+        if (!$isDevMode) {
+            $directory_cache =  !empty($params['directory_cache'])?$params['directory_cache']:sys_get_temp_dir();
+            $cache = new FilesystemCache($directory_cache);
+        }
+
         $config = Setup::createAnnotationMetadataConfiguration(
             [
                 __DIR__ . '/Entity',
                 __DIR__ . '/Internal/Entity',
             ],
-            $isDevMode
+            $isDevMode,
+            null,
+            $cache
         );
+        $config->setResultCacheImpl(new ArrayCache());
         $em = EntityManager::create($params, $config);
         parent::__construct($em);
 
