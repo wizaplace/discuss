@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\OneToMany;
+use Wizacha\Discuss\Internal\Entity\MetaData;
 use Wizacha\Discuss\Entity\Discussion\Status;
 
 /**
@@ -59,6 +61,12 @@ class Discussion implements DiscussionInterface
      * @Column(type="boolean")
      */
     protected $open = true;
+
+    /**
+     * @var MetaData[]
+     * @OneToMany(targetEntity="\Wizacha\Discuss\Internal\Entity\MetaData", mappedBy="discussion", indexBy="key", cascade={"ALL"})
+     */
+    protected $meta_data = [];
 
     /**
      * @inheritdoc
@@ -165,6 +173,23 @@ class Discussion implements DiscussionInterface
         } elseif ($this->getInitiator() == $user_id) {
             $this->setStatusInitiator(new Status(Status::HIDDEN));
         }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMetaData($key)
+    {
+        return isset($this->meta_data[$key]) ? $this->meta_data[$key]->getValue() : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setMetaData($key, $value)
+    {
+        $this->meta_data[$key] = new MetaData($this, $key, $value);
         return $this;
     }
 }
