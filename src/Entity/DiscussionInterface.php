@@ -38,6 +38,11 @@ interface DiscussionInterface
     public function getRecipient();
 
     /**
+     * @return int[]
+     */
+    public function getUsers();
+
+    /**
      * @return \Wizacha\Discuss\Entity\Discussion\Status
      */
     public function getStatusInitiator();

@@ -8,6 +8,7 @@
 namespace Wizacha\Discuss\Repository;
 
 
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Client;
@@ -65,12 +66,13 @@ class DiscussionRepository extends EntityManagerAware
 
         return $qb
             ->where($expr->eq('Discussion.id', ':discussion_id'))
-            ->andWhere(
-                $expr->orX(
-                    $expr->eq('Discussion.initiator', ':user_id'),
-                    $expr->eq('Discussion.recipient', ':user_id')
-                )
-            )->setParameters(
+            ->join(
+                'Discussion.users',
+                'DiscussionUser',
+                Join::WITH,
+                $expr->eq('DiscussionUser.user_id', ':user_id')
+            )
+            ->setParameters(
                 [
                     'discussion_id' => $discussion_id,
                     'user_id'       => $user_id,
@@ -153,36 +155,24 @@ class DiscussionRepository extends EntityManagerAware
         $conditions = [];
 
         if($user_id) {
-            $conditions[] = [
-                'initiator' => $expr->eq('Discussion.initiator', ':user_id'),
-                'recipient' => $expr->eq('Discussion.recipient', ':user_id'),
-            ];
+            $conditions[] = $expr->eq('DiscussionUser.user_id', ':user_id');
             $queryBuilder->setParameter('user_id', $user_id);
         }
 
         if($status) {
-            $conditions[] = [
-                'initiator' => $expr->eq('Discussion.status_initiator', ':status'),
-                'recipient' => $expr->eq('Discussion.status_recipient', ':status'),
-            ];
+            $conditions[] = $expr->eq('DiscussionUser.status', ':status');
             $queryBuilder->setParameter('status', $status);
         }
 
-        switch(count($conditions)) {
-            case 1:
-                $queryBuilder->andWhere(
-                    $expr->orX($conditions[0]['initiator'], $conditions[0]['recipient'])
-                );
-                break;
-            case 2:
-                $queryBuilder->andWhere(
-                    $expr->orX(
-                        $expr->andX($conditions[0]['initiator'], $conditions[1]['initiator']),
-                        $expr->andX($conditions[0]['recipient'], $conditions[1]['recipient'])
-                    )
-                );
-                break;
+        if($conditions) {
+            $queryBuilder->join(
+                'Discussion.users',
+                'DiscussionUser',
+                Join::WITH,
+                call_user_func_array([$expr, 'andX'], $conditions)
+            );
         }
+
         return $queryBuilder;
     }
 }

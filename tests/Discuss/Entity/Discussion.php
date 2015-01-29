@@ -25,6 +25,7 @@ class Discussion extends atoum\test
         $dsc = new DiscussionTest();
 
         $this
+            ->variable($dsc->getInitiator())->isNull()
             ->object($dsc->setInitiator($i))->isIdenticalTo($dsc)
             ->integer($dsc->getInitiator())
             ->isIdenticalTo($i);
@@ -37,6 +38,7 @@ class Discussion extends atoum\test
         $dsc = new DiscussionTest();
 
         $this
+            ->variable($dsc->getRecipient())->isNull()
             ->object($dsc->setRecipient($r))->isIdenticalTo($dsc)
             ->integer($dsc->getRecipient())
             ->isIdenticalTo($r);
@@ -137,5 +139,15 @@ class Discussion extends atoum\test
             ->variable($d->setMetaData($existing_key, $new_value)->getMetaData($existing_key))
                 ->isIdenticalTo($new_value)
         ;
+    }
+
+    public function test_getUsers_succeed()
+    {
+        $users = [2, 1];
+        $d     = (new DiscussionTest)
+            ->setInitiator($users[0])
+            ->setRecipient($users[1])
+        ;
+        $this->array($d->getUsers())->isIdenticalTo($users);
     }
 }
