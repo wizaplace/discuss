@@ -150,4 +150,19 @@ class Discussion extends atoum\test
         ;
         $this->array($d->getUsers())->isIdenticalTo($users);
     }
+
+    public function test_getOtherUser()
+    {
+        $d = new DiscussionTest;
+        $this
+            ->variable($d->getOtherUser(1))->isNull()
+        ;
+
+        $d->setInitiator(2)->setRecipient(1);
+        $this
+            ->integer($d->getOtherUser(1))->isIdenticalTo(2)
+            ->integer($d->getOtherUser(2))->isIdenticalTo(1)
+            ->integer($d->getOtherUser(0))->isIdenticalTo(2)
+        ;
+    }
 }

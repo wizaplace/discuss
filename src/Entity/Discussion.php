@@ -88,6 +88,19 @@ class Discussion implements DiscussionInterface
     /**
      * @inheritdoc
      */
+    public function getOtherUser($user_id)
+    {
+        foreach($this->users as $other_id => $user) {
+            if($other_id != $user_id) {
+                return $other_id;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInitiator()
     {
         foreach ($this->users as $user_id => $user) {
