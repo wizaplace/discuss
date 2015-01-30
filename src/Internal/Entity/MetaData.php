@@ -19,7 +19,7 @@ use Wizacha\Discuss\Entity\DiscussionInterface;
  * Class MetaData
  * @package Wizacha\Discuss\Internal\Entity
  * @Entity()
- * @Table(uniqueConstraints={@UniqueConstraint(name="unique_key_by_discussion", columns={"discussion_id", "key"})})
+ * @Table(uniqueConstraints={@UniqueConstraint(name="unique_name_by_discussion", columns={"discussion_id", "name"})})
  */
 class MetaData
 {
@@ -41,7 +41,7 @@ class MetaData
      * @Column(type="string")
      * @var string
      */
-    protected $key;
+    protected $name;
 
     /**
      * @Column(type="string")
@@ -51,22 +51,22 @@ class MetaData
 
     /**
      * @param DiscussionInterface $discussion
-     * @param string $key
+     * @param string $name
      * @param string $value
      */
-    public function __construct(DiscussionInterface $discussion, $key, $value)
+    public function __construct(DiscussionInterface $discussion, $name, $value)
     {
         $this->discussion = $discussion;
-        $this->key        = $key;
+        $this->name       = $name;
         $this->value      = $value;
     }
 
     /**
      * @return string
      */
-    public function getKey()
+    public function getName()
     {
-        return $this->key;
+        return $this->name;
     }
 
     /**

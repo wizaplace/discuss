@@ -64,7 +64,7 @@ class Discussion implements DiscussionInterface
 
     /**
      * @var MetaData[]
-     * @OneToMany(targetEntity="\Wizacha\Discuss\Internal\Entity\MetaData", mappedBy="discussion", indexBy="key", cascade={"ALL"})
+     * @OneToMany(targetEntity="\Wizacha\Discuss\Internal\Entity\MetaData", mappedBy="discussion", indexBy="name", cascade={"ALL"})
      */
     protected $meta_data = [];
 
@@ -179,17 +179,17 @@ class Discussion implements DiscussionInterface
     /**
      * @inheritdoc
      */
-    public function getMetaData($key)
+    public function getMetaData($name)
     {
-        return isset($this->meta_data[$key]) ? $this->meta_data[$key]->getValue() : null;
+        return isset($this->meta_data[$name]) ? $this->meta_data[$name]->getValue() : null;
     }
 
     /**
      * @inheritdoc
      */
-    public function setMetaData($key, $value)
+    public function setMetaData($name, $value)
     {
-        $this->meta_data[$key] = new MetaData($this, $key, $value);
+        $this->meta_data[$name] = new MetaData($this, $name, $value);
         return $this;
     }
 }
