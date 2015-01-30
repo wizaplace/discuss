@@ -8,6 +8,7 @@
 namespace Wizacha\Discuss\Entity;
 
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -15,6 +16,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Wizacha\Discuss\Internal\Entity\MetaData;
 use Wizacha\Discuss\Entity\Discussion\Status;
+use Wizacha\Discuss\Internal\Entity\DiscussionUser;
 
 /**
  * Class Discussion
@@ -33,28 +35,10 @@ class Discussion implements DiscussionInterface
     protected $id;
 
     /**
-     * @var int
-     * @Column(type="integer")
+     * @var DiscussionUser[]
+     * @OneToMany(targetEntity="\Wizacha\Discuss\Internal\Entity\DiscussionUser", mappedBy="discussion", indexBy="user_id", cascade={"ALL"})
      */
-    protected $initiator;
-
-    /**
-     * @var int
-     * @Column(type="integer")
-     */
-    protected $recipient;
-
-    /**
-     * @var Discussion/Status
-     * @Column(type="string", length=1)
-     */
-    protected $status_initiator = Status::DISPLAYED;
-
-    /**
-     * @var Discussion/Status
-     * @Column(type="string", length=1)
-     */
-    protected $status_recipient = Status::DISPLAYED;
+    protected $users;
 
     /**
      * @var bool
@@ -67,6 +51,11 @@ class Discussion implements DiscussionInterface
      * @OneToMany(targetEntity="\Wizacha\Discuss\Internal\Entity\MetaData", mappedBy="discussion", indexBy="name", cascade={"ALL"})
      */
     protected $meta_data = [];
+
+    public function __construct()
+    {
+        $this->users = new ArrayCollection;
+    }
 
     /**
      * @inheritdoc
@@ -81,8 +70,32 @@ class Discussion implements DiscussionInterface
      */
     public function setInitiator($initiator)
     {
-        $this->initiator = $initiator;
+        $this->users = $this->users->filter(function($user) {
+            return !$user->isInitiator();
+        });
+        $this->users[$initiator] = new DiscussionUser($this, $initiator, new Status(Status::DISPLAYED), true);
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUsers()
+    {
+        return $this->users->getKeys();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOtherUser($user_id)
+    {
+        foreach($this->users as $other_id => $user) {
+            if($other_id != $user_id) {
+                return $other_id;
+            }
+        }
+        return null;
     }
 
     /**
@@ -90,7 +103,12 @@ class Discussion implements DiscussionInterface
      */
     public function getInitiator()
     {
-        return $this->initiator;
+        foreach ($this->users as $user_id => $user) {
+            if ($user->isInitiator()) {
+                return $user_id;
+            }
+        }
+        return null;
     }
 
     /**
@@ -98,7 +116,10 @@ class Discussion implements DiscussionInterface
      */
     public function setRecipient($recipient)
     {
-        $this->recipient = $recipient;
+        $this->users = $this->users->filter(function ($user) {
+            return $user->isInitiator();
+        });
+        $this->users[$recipient] = new DiscussionUser($this, $recipient, new Status(Status::DISPLAYED), false);
         return $this;
     }
 
@@ -107,17 +128,12 @@ class Discussion implements DiscussionInterface
      */
     public function getRecipient()
     {
-        return $this->recipient;
-    }
-
-    /**
-     * @param Status $status_initiator
-     * @return $this
-     */
-    private function setStatusInitiator(Status $status_initiator)
-    {
-        $this->status_initiator = $status_initiator;
-        return $this;
+        foreach ($this->users as $user_id => $user) {
+            if (!$user->isInitiator()) {
+                return $user_id;
+            }
+        }
+        return null;
     }
 
     /**
@@ -125,17 +141,7 @@ class Discussion implements DiscussionInterface
      */
     public function getStatusInitiator()
     {
-        return new Status($this->status_initiator);
-    }
-
-    /**
-     * @param Status $status_recipient
-     * @return $this
-     */
-    private function setStatusRecipient(Status $status_recipient)
-    {
-        $this->status_recipient = $status_recipient;
-        return $this;
+        return $this->users[$this->getInitiator()]->getStatus();
     }
 
     /**
@@ -160,7 +166,7 @@ class Discussion implements DiscussionInterface
      */
     public function getStatusRecipient()
     {
-        return new Status($this->status_recipient);
+        return $this->users[$this->getRecipient()]->getStatus();
     }
 
     /**
@@ -168,10 +174,17 @@ class Discussion implements DiscussionInterface
      */
     public function hideDiscussion($user_id)
     {
-        if ($this->getRecipient() == $user_id) {
-            $this->setStatusRecipient(new Status(Status::HIDDEN));
-        } elseif ($this->getInitiator() == $user_id) {
-            $this->setStatusInitiator(new Status(Status::HIDDEN));
+        return $this->setUserStatus($user_id, new Status(Status::HIDDEN));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setUserStatus($user_id, Status $status)
+    {
+        $user_id = (int)$user_id;
+        if (isset($this->users[$user_id])) {
+            $this->users[$user_id]->setStatus($status);
         }
         return $this;
     }

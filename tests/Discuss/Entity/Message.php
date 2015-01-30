@@ -47,6 +47,7 @@ class Message extends atoum\test
     {
         $date = \DateTime::createFromFormat('d-m-Y H:i:s', '21-12-2012 01:02:03');
         $msg = new MessageTest();
+        $msg->setDiscussion((new DiscussionTest())->setRecipient(0))->setAuthor(1);
 
         $this
             ->boolean($msg->isRead())->isFalse()
@@ -61,6 +62,7 @@ class Message extends atoum\test
     {
         $beforeDate = new \DateTime();
         $msg = new MessageTest();
+        $msg->setDiscussion((new DiscussionTest())->setRecipient(0))->setAuthor(1);
 
         $this
             ->boolean($msg->isRead())->isFalse()

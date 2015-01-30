@@ -8,6 +8,8 @@
 namespace Wizacha\Discuss\Entity;
 
 
+use Wizacha\Discuss\Entity\Discussion\Status;
+
 interface DiscussionInterface
 {
     /**
@@ -38,6 +40,17 @@ interface DiscussionInterface
     public function getRecipient();
 
     /**
+     * @return int[]
+     */
+    public function getUsers();
+
+    /**
+     * @param int $user_id
+     * @return int
+     */
+    public function getOtherUser($user_id);
+
+    /**
      * @return \Wizacha\Discuss\Entity\Discussion\Status
      */
     public function getStatusInitiator();
@@ -59,6 +72,13 @@ interface DiscussionInterface
      * @return $this
      */
     public function hideDiscussion($user_id);
+
+    /**
+     * @param int $user_id
+     * @param Status $status
+     * @return $this
+     */
+    public function setUserStatus($user_id, Status $status);
 
     /**
      * @return \Wizacha\Discuss\Entity\Discussion\Status
