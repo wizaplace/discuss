@@ -15,12 +15,12 @@ class MetaData extends atoum\test
     public function test_constructAndGet_succeed()
     {
         $d     = new \mock\Wizacha\Discuss\Entity\DiscussionInterface;
-        $key   = 'key';
+        $name  = 'name';
         $value = 'value';
-        $m     = new MetaDataTest($d, $key, $value);
+        $m     = new MetaDataTest($d, $name, $value);
 
         $this
-            ->string($m->getKey())->isIdenticalTo($key)
+            ->string($m->getName())->isIdenticalTo($name)
             ->string($m->getValue())->isIdenticalTo($value)
             ->string((string)$m)->isIdenticalTo($value)
         ;
