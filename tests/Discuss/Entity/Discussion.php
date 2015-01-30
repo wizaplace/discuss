@@ -103,6 +103,47 @@ class Discussion extends atoum\test
             ->isEqualTo($exp_initiator_status);
     }
 
+    public function test_setUserStatus_succeedWithExistentUser()
+    {
+        $d = (new DiscussionTest())
+            ->setInitiator(1)
+            ->setRecipient(2)
+        ;
+
+        $this
+            ->string((string)$d->getStatusInitiator())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+            ->string((string)$d->getStatusRecipient())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+
+            ->string((string)$d->setUserStatus(1, new DiscussionTest\Status(DiscussionTest\Status::HIDDEN))->getStatusInitiator())
+                ->isIdenticalTo(DiscussionTest\Status::HIDDEN)
+            ->string((string)$d->getStatusRecipient())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+
+            ->string((string)$d->setUserStatus(2, new DiscussionTest\Status(DiscussionTest\Status::HIDDEN))->getStatusRecipient())
+                ->isIdenticalTo(DiscussionTest\Status::HIDDEN)
+            ->string((string)$d->getStatusInitiator())->isIdenticalTo(DiscussionTest\Status::HIDDEN)
+        ;
+    }
+
+    public function test_setUserStatus_doNothingWithUnknownUser()
+    {
+        $d = (new DiscussionTest())
+            ->setInitiator(1)
+            ->setRecipient(2)
+        ;
+
+        $this
+            ->string((string)$d->getStatusInitiator())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+            ->string((string)$d->getStatusRecipient())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+        ;
+
+        $d->setUserStatus(999, new DiscussionTest\Status(DiscussionTest\Status::HIDDEN));
+
+        $this
+            ->string((string)$d->getStatusInitiator())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+            ->string((string)$d->getStatusRecipient())->isIdenticalTo(DiscussionTest\Status::DISPLAYED)
+        ;
+    }
+
     public function test_setGetMetaData_succeed()
     {
         $meta_data = [

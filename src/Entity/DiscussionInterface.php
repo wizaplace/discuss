@@ -8,6 +8,8 @@
 namespace Wizacha\Discuss\Entity;
 
 
+use Wizacha\Discuss\Entity\Discussion\Status;
+
 interface DiscussionInterface
 {
     /**
@@ -70,6 +72,13 @@ interface DiscussionInterface
      * @return $this
      */
     public function hideDiscussion($user_id);
+
+    /**
+     * @param int $user_id
+     * @param Status $status
+     * @return $this
+     */
+    public function setUserStatus($user_id, Status $status);
 
     /**
      * @return \Wizacha\Discuss\Entity\Discussion\Status
