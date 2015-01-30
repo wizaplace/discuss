@@ -124,7 +124,7 @@ class Discussion extends atoum\test
         }
 
         $this
-            ->variable($d->getMetaData('Unknown key'))
+            ->variable($d->getMetaData('Unknown name'))
             ->isNull()
         ;
 

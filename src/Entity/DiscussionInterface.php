@@ -66,16 +66,16 @@ interface DiscussionInterface
     public function getStatusRecipient();
 
     /**
-     * Gets value associated to a key, or null if not exists
-     * @param string $key
+     * Gets value associated to a name, or null if not exists
+     * @param string $name
      * @return string|null
      */
-    public function getMetaData($key);
+    public function getMetaData($name);
 
     /**
-     * @param string $key
+     * @param string $name
      * @param string $value
      * @return $this
      */
-    public function setMetaData($key, $value);
+    public function setMetaData($name, $value);
 }
