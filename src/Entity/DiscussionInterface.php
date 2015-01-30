@@ -38,6 +38,17 @@ interface DiscussionInterface
     public function getRecipient();
 
     /**
+     * @return int[]
+     */
+    public function getUsers();
+
+    /**
+     * @param int $user_id
+     * @return int
+     */
+    public function getOtherUser($user_id);
+
+    /**
      * @return \Wizacha\Discuss\Entity\Discussion\Status
      */
     public function getStatusInitiator();
