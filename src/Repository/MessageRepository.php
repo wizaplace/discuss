@@ -67,7 +67,8 @@ class MessageRepository extends EntityManagerAware
      */
     public function save(MessageInterface $message)
     {
-        if (is_null($message->getId())) {
+        $is_new = is_null($message->getId());
+        if ($is_new) {
             $d            = $message->getDiscussion();
             $recipient_id = $d->getOtherUser($message->getAuthor());
             $d->setUserStatus($recipient_id, new Status(Status::DISPLAYED));
@@ -77,10 +78,12 @@ class MessageRepository extends EntityManagerAware
         $em->persist($message);
         $em->flush();
 
-        $this->_client->getEventDispatcher()->dispatch(
-            DiscussEvents::MESSAGE_NEW,
-            new MessageEvent($message)
-        );
+        if ($is_new) {
+            $this->_client->getEventDispatcher()->dispatch(
+                DiscussEvents::MESSAGE_NEW,
+                new MessageEvent($message)
+            );
+        }
         return $message->getId();
     }
 

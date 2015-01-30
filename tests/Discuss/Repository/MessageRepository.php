@@ -193,16 +193,20 @@ class MessageRepository extends RepositoryTest
         $client = new Client();
         $atoum  = $this;
         $msg    = $this->createMessage();
+        $count  = 0;
 
         $client->getEventDispatcher()->addListener(
             DiscussEvents::MESSAGE_NEW,
-            function ($event) use ($atoum, $msg) {
+            function ($event) use ($atoum, $msg, &$count) {
+                ++$count;
                 $atoum
+                    ->integer($count)->isIdenticalTo(1)
                     ->object($event)->isInstanceOf('Wizacha\Discuss\Event\MessageEvent')
                     ->object($event->getMessage())->isIdenticalTo($msg);
             }
         );
 
+        $client->getMessageRepository()->save($msg);
         $client->getMessageRepository()->save($msg);
     }
 }
