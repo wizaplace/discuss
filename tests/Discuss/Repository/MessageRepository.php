@@ -8,6 +8,7 @@
 namespace Wizacha\Discuss\Repository\tests\unit;
 
 use Wizacha\Discuss\DiscussEvents;
+use Wizacha\Discuss\Entity\Discussion\Status;
 use Wizacha\Discuss\Tests\Client;
 use Wizacha\Discuss\Tests\RepositoryTest;
 
@@ -34,6 +35,30 @@ class MessageRepository extends RepositoryTest
         $this->object($msg)->isInstanceOf('\Wizacha\Discuss\Entity\MessageInterface');
 
         $this->testEntityData($msg, $msg_data);
+    }
+
+    public function test_saveNewMessage_showDiscussionForMessageRecipient()
+    {
+        $d = $this->createDiscussion()
+            ->setInitiator(1)->setUserStatus(1, new Status(Status::HIDDEN))
+            ->setRecipient(2)->setUserStatus(2, new Status(Status::HIDDEN))
+        ;
+        $msg = $this->createMessage($d)
+            ->setAuthor(2)
+        ;
+
+        $repo = (new Client())->getMessageRepository();
+        $repo->save($msg);
+
+        $this
+            ->string((string)$d->getStatusInitiator())->isIdenticalTo(Status::DISPLAYED)
+            ->string((string)$d->getStatusRecipient())->isIdenticalTo(Status::HIDDEN)
+        ;
+
+        $d->setUserStatus(2, new Status(Status::DISPLAYED));
+        $this->string((string)$d->getStatusRecipient())->isIdenticalTo(Status::DISPLAYED);
+        $repo->save($msg);
+        $this->string((string)$d->getStatusRecipient())->isIdenticalTo(Status::DISPLAYED);
     }
 
     public function test_get_failIfNotExist()

@@ -12,6 +12,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Wizacha\Discuss\Client;
 use Wizacha\Discuss\DiscussEvents;
+use Wizacha\Discuss\Entity\Discussion\Status;
 use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Entity\MessageInterface;
 use Wizacha\Discuss\Event\MessageEvent;
@@ -66,6 +67,12 @@ class MessageRepository extends EntityManagerAware
      */
     public function save(MessageInterface $message)
     {
+        if (is_null($message->getId())) {
+            $d            = $message->getDiscussion();
+            $recipient_id = $d->getOtherUser($message->getAuthor());
+            $d->setUserStatus($recipient_id, new Status(Status::DISPLAYED));
+        }
+
         $em = $this->getEntityManager();
         $em->persist($message);
         $em->flush();

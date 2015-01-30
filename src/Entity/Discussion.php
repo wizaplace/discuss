@@ -174,8 +174,17 @@ class Discussion implements DiscussionInterface
      */
     public function hideDiscussion($user_id)
     {
+        return $this->setUserStatus($user_id, new Status(Status::HIDDEN));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setUserStatus($user_id, Status $status)
+    {
+        $user_id = (int)$user_id;
         if (isset($this->users[$user_id])) {
-            $this->users[$user_id]->setStatus(new Status(Status::HIDDEN));
+            $this->users[$user_id]->setStatus($status);
         }
         return $this;
     }
