@@ -136,10 +136,10 @@ class MessageRepository extends RepositoryTest
 
         $nb_unread_per_disc = 4;
         foreach($discussions as $d) {
-            for($i=0; $i< $nb_discussion * $nb_unread_per_disc; ++$i) {
+            for($i=0; $i< 2 * $nb_unread_per_disc; ++$i) {
                 $msg = $this->createMessage($d);
-                if($i % $nb_discussion) {
-                    $msg->setReadDate(new \DateTime());
+                if($i % 2) {
+                    $msg->setAsRead();
                 }
                 $repo->save($msg);
             }
