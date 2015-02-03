@@ -131,6 +131,10 @@ class MessageRepository extends EntityManagerAware
                 'm',
                 Join::WITH
             )
+            ->join('m.discussion',
+                'Discussion',
+                Join::WITH
+            )
             ->setParameters([
                 'user_id' => $user_id,
             ])
@@ -140,6 +144,11 @@ class MessageRepository extends EntityManagerAware
                 ->setParameter('discussion_id', $discussion_id)
             ;
         }
+        $qb = $this->_client->getDiscussionRepository()->andWhereDiscussionFilter(
+            $qb,
+            $user_id,
+            new Status(Status::DISPLAYED)
+        );
 
         return (integer)$qb->getQuery()->getSingleScalarResult();
     }

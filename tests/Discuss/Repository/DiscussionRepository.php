@@ -53,6 +53,21 @@ class DiscussionRepository extends RepositoryTest
         }
     }
 
+    public function test_saveUserStatus_succeed()
+    {
+        $repo = (new Client())->getDiscussionRepository();
+        $d    = $this->createDiscussion()
+            ->setUserStatus(self::INITIATOR_ID, new Status(Status::HIDDEN))
+            ->setUserStatus(self::RECIPIENT_ID, new Status(Status::HIDDEN))
+        ;
+        $d = $repo->get($repo->save($d));
+
+        $this
+            ->string((string)$d->getStatusInitiator())->isIdenticalTo(Status::HIDDEN)
+            ->string((string)$d->getStatusRecipient())->isIdenticalTo(Status::HIDDEN)
+        ;
+    }
+
     public function test_get_failIfNotExist()
     {
         $repo = (new Client())->getDiscussionRepository();
