@@ -162,6 +162,35 @@ class MessageRepository extends RepositoryTest
 
     }
 
+    public function test_getUnreadCount_discardHiddenDiscussion()
+    {
+        $client      = new Client();
+        $repo        = $client->getMessageRepository();
+        $discussion  = $this->createDiscussion();
+
+        $nb_msg_per_user = 10;
+        for($i=0; $i< $nb_msg_per_user; ++$i) {
+            $msg = $this->createMessage($discussion);
+            $repo->save($msg);
+
+            $msg = $this->createMessage($discussion)
+                ->setAuthor(RepositoryTest::RECIPIENT_ID)
+            ;
+            $repo->save($msg);
+        }
+        $client->getDiscussionRepository()
+            ->save($discussion->hideDiscussion(RepositoryTest::RECIPIENT_ID));
+
+        $this
+            ->integer($repo->getUnreadCount(RepositoryTest::AUTHOR_ID))->isIdenticalTo($nb_msg_per_user)
+            ->integer($repo->getUnreadCount(RepositoryTest::RECIPIENT_ID))->isZero()
+        ;
+        $this
+            ->integer($repo->getUnreadCount(RepositoryTest::AUTHOR_ID, $discussion->getId()))->isIdenticalTo($nb_msg_per_user)
+            ->integer($repo->getUnreadCount(RepositoryTest::RECIPIENT_ID, $discussion->getId()))->isZero()
+        ;
+    }
+
     public function test_getLastOfDiscussion_succeed()
     {
         $repo = (new Client())->getMessageRepository();
