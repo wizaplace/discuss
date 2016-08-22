@@ -17,7 +17,7 @@
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "atoum/atoum": "~1.2"
+        "atoum/atoum": "^2.8"
     },
     "scripts": {
         "run-tests": "vendor/atoum/atoum/bin/atoum -c tests/atoum.config.php -bf tests/bootstrap.php -nccfns Symfony -d tests/Discuss"
