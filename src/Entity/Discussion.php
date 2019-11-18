@@ -52,9 +52,16 @@ class Discussion implements DiscussionInterface
      */
     protected $meta_data = [];
 
+    /**
+     * @var Messages[]
+     * @OneToMany(targetEntity="Message", mappedBy="discussion")
+     */
+    protected $messages;
+
     public function __construct()
     {
-        $this->users = new ArrayCollection;
+        $this->users = new ArrayCollection();
+        $this->messages = new ArrayCollection();
     }
 
     /**

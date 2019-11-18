@@ -127,6 +127,14 @@ class DiscussionRepository extends EntityManagerAware
     public function getAll($user_id = null, Status $status = null, $nb_per_page = null, $page = null)
     {
         $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
+
+        $qb->select('Discussion')
+            ->addSelect('Message')
+            ->join('Discussion.messages', 'Message')
+            ->orderBy('Message.send_date', 'DESC')
+            ->groupBy('Message.discussion')
+        ;
+
         $this->andWhereDiscussionFilter($qb, $user_id, $status);
 
         if ($nb_per_page > 0) {
