@@ -122,6 +122,7 @@ class DiscussionRepository extends EntityManagerAware
      * @param Status $status
      * @param integer $nb_per_page
      * @param integer $page
+     *
      * @return Paginator
      */
     public function getAll($user_id = null, Status $status = null, $nb_per_page = null, $page = null)
@@ -149,6 +150,7 @@ class DiscussionRepository extends EntityManagerAware
      * @param Status $status
      * @param integer $nb_per_page
      * @param integer $page
+     *
      * @return Paginator
      */
     public function getAllOrderedByMessageSendDate(
@@ -160,7 +162,8 @@ class DiscussionRepository extends EntityManagerAware
     {
         $qb = $this->_getRepo()->createQueryBuilder('Discussion');
 
-        $qb->select('Discussion')
+        $qb
+            ->select('Discussion')
             ->addSelect('Message')
             ->join('Discussion.messages', 'Message')
             ->orderBy('Message.send_date', 'DESC')
@@ -175,6 +178,7 @@ class DiscussionRepository extends EntityManagerAware
                 $qb->setFirstResult($page * $nb_per_page);
             }
         }
+
         return new Paginator($qb);
     }
 
