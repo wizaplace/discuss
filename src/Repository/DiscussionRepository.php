@@ -126,7 +126,39 @@ class DiscussionRepository extends EntityManagerAware
      */
     public function getAll($user_id = null, Status $status = null, $nb_per_page = null, $page = null)
     {
-        $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
+        $qb = $this->_getRepo()->createQueryBuilder('Discussion');
+
+        $this->andWhereDiscussionFilter($qb, $user_id, $status);
+
+        if ($nb_per_page > 0) {
+            $qb->setMaxResults($nb_per_page);
+            if ($page > 0) {
+                $qb->setFirstResult($page * $nb_per_page);
+            }
+        }
+
+        return new Paginator($qb);
+    }
+
+    /**
+     * Allow to retrieve all discussion, with optionnal filters
+     * ordered by discussion last message date DESC
+     * For each filter, null value means *ALL*
+     *
+     * @param integer $user_id
+     * @param Status $status
+     * @param integer $nb_per_page
+     * @param integer $page
+     * @return Paginator
+     */
+    public function getAllOrderedByMessageSendDate(
+        int $user_id = null,
+        Status $status = null,
+        int $nb_per_page = null,
+        int $page = null
+    )
+    {
+        $qb = $this->_getRepo()->createQueryBuilder('Discussion');
 
         $qb->select('Discussion')
             ->addSelect('Message')
@@ -143,10 +175,8 @@ class DiscussionRepository extends EntityManagerAware
                 $qb->setFirstResult($page * $nb_per_page);
             }
         }
-
         return new Paginator($qb);
     }
-
 
     /**
      * **INTERNAL USE ONLY**
