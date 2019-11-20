@@ -8,6 +8,8 @@
 namespace Wizacha\Discuss\Repository\tests\unit;
 
 use Wizacha\Discuss\Entity\Discussion\Status;
+use Wizacha\Discuss\Entity\DiscussionInterface;
+use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Tests\Client;
 use Wizacha\Discuss\Tests\RepositoryTest;
 
@@ -256,6 +258,7 @@ class DiscussionRepository extends RepositoryTest
      * @param int    $iniId
      * @param string $recStatus
      * @param string $iniStatus
+     *
      * @return Message
      */
     public function generateDiscussionAndMessage (
@@ -284,34 +287,65 @@ class DiscussionRepository extends RepositoryTest
         return $message;
     }
 
+    public function getExpectedResultByGivenMessage(array $messages, array $expectedResult)
+    {
+        $finalResult = [];
+        foreach ($expectedResult as $result) {
+            $finalResult[] = $messages[$result];
+            $finalResult[] = $messages[$result]->getDiscussion();
+        }
+
+        return $finalResult;
+    }
+
     public function test_getAllOrderedByMessageSendDate_()
     {
         $repos['client'] = new Client();
         $repos['discuss'] = $repos['client']->getDiscussionRepository();
         $repos['message'] = $repos['client']->getMessageRepository();
 
-        $message1 = $this->generateDiscussionAndMessage($repos, '10-11-2018', 1111, 1112, Status::HIDDEN, Status::HIDDEN);
-        $message2 = $this->generateDiscussionAndMessage($repos, '10-11-2019', 2221, 2222, Status::DISPLAYED, Status::DISPLAYED);
-        $message3 = $this->generateDiscussionAndMessage($repos, '10-11-2020', 3331, 3332, Status::HIDDEN, Status::DISPLAYED);
-        $message4 = $this->generateDiscussionAndMessage($repos, '10-12-2019', 4441, 4442, Status::DISPLAYED, Status::HIDDEN);
+        $message = [
+            $this->generateDiscussionAndMessage(
+                $repos,
+                '10-11-2018',
+                1111,
+                1112,
+                Status::HIDDEN,
+                Status::HIDDEN
+            ),
+            $this->generateDiscussionAndMessage(
+                $repos,
+                '10-11-2019',
+                2221,
+                2222,
+                Status::DISPLAYED,
+                Status::DISPLAYED
+            ),
+            $this->generateDiscussionAndMessage(
+                $repos,
+                '10-11-2020',
+                3331,
+                3332,
+                Status::HIDDEN,
+                Status::DISPLAYED
+            ),
+            $this->generateDiscussionAndMessage(
+                $repos,
+                '10-12-2019',
+                4441,
+                4442,
+                Status::DISPLAYED,
+                Status::HIDDEN
+            ),
+        ];
 
         // Get discussion without filter
         $result = [];
-        $expected = [
-            $message3,
-            $message3->getDiscussion(),
-            $message4,
-            $message4->getDiscussion(),
-            $message2,
-            $message2->getDiscussion(),
-            $message1,
-            $message1->getDiscussion(),
-        ];
+        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3, 1, 0]);
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate() as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
-
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate() as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
@@ -319,124 +353,83 @@ class DiscussionRepository extends RepositoryTest
         $result = [];
         $expected = [];
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(5555) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(5555) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
         $result = [];
-        $expected = [
-            $message1,
-            $message1->getDiscussion(),
-        ];
+        $expected = $this->getExpectedResultByGivenMessage($message, [0]);
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(1112) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(1112) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
         $result = [];
         $expected = [];
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(5423651525) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(5423651525) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
         // Get discussion with status filter
         $result = [];
-        $expected = [
-            $message3,
-            $message3->getDiscussion(),
-            $message4,
-            $message4->getDiscussion(),
-            $message1,
-            $message1->getDiscussion(),
-        ];
+        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3, 0]);
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, new Status(Status::HIDDEN)) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, new Status(Status::HIDDEN)) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
         $result = [];
-        $expected = [
-            $message3,
-            $message3->getDiscussion(),
-            $message4,
-            $message4->getDiscussion(),
-            $message2,
-            $message2->getDiscussion(),
-        ];
+        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3, 1]);
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, new Status(Status::DISPLAYED)) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
-
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, new Status(Status::DISPLAYED)) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
         //Get discussion test pagination
         $result = [];
-        $expected = [
-            $message3,
-            $message3->getDiscussion(),
-            $message4,
-            $message4->getDiscussion(),
-            $message2,
-            $message2->getDiscussion(),
-            $message1,
-            $message1->getDiscussion(),
-        ];
+        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3, 1, 0]);
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 5, 0) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
-
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 5, 0) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
         $result = [];
-        $expected = [
-            $message3,
-            $message3->getDiscussion(),
-            $message4,
-            $message4->getDiscussion(),
-        ];
+        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3]);
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 2) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
-
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 2) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
         $result = [];
-        $expected = [
-            $message2,
-            $message2->getDiscussion(),
-            $message1,
-            $message1->getDiscussion(),
-        ];
+        $expected = $this->getExpectedResultByGivenMessage($message, [1, 0]);
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 2, 1) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
-
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 2, 1) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
 
         $result = [];
         $expected = [];
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 5, 4) as $d) {
-            $result[] = $repos['message']->getLastOfDiscussion($d->getId());
-            $result[] = $d;
-
+        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 5, 4) as $discussion) {
+            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
+            $result[] = $discussion;
         }
         $this->array($result)->isIdenticalTo($expected);
     }
