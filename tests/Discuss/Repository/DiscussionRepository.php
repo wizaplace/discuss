@@ -252,185 +252,144 @@ class DiscussionRepository extends RepositoryTest
     }
 
     /**
-     * @param array  $repos
-     * @param string $date
-     * @param int    $recId
-     * @param int    $iniId
-     * @param string $recStatus
-     * @param string $iniStatus
+     * @param int $userId
+     * @param Status $status
      *
-     * @return Message
+     * @return array [result DateTime, expected DateTime]
      */
-    public function generateDiscussionAndMessage (
-        array $repos,
-        $date,
-        $recId,
-        $iniId,
-        $recStatus,
-        $iniStatus
-    )
+    public function generateMessageAndDiscussion(int $userId = null, Status $status = null)
     {
-        $message = $this->createMessage();
-        $message->setSendDate(new \DateTime($date));
-        $message->getDiscussion()
-            ->setRecipient($recId)
-            ->setInitiator($iniId)
-        ;
-        $repos['message']->save($message);
-        $message->getDiscussion()
-            ->setUserStatus($recId, new Status($recStatus))
-            ->setUserStatus($iniId, new Status($iniStatus))
-        ;
-        $repos['message']->save($message);
-        $repos['discuss']->save($message->getDiscussion());
+        $client = new Client();
+        $messageRepo = $client->getMessageRepository();
+        $discussionRepo = $client->getDiscussionRepository();
+        $expected = [];
+        $queryResult = [];
 
-        return $message;
-    }
+        for($i=1; $i <= 3; $i++) {
+            $initiatorId = $i;
+            $recipientId = $i+1;
+            foreach ([Status::DISPLAYED, Status::HIDDEN] as $initiator_hidden) {
+                foreach ([Status::DISPLAYED, Status::HIDDEN] as $recipient_hidden) {
 
-    public function getExpectedResultByGivenMessage(array $messages, array $expectedResult)
-    {
-        $finalResult = [];
-        foreach ($expectedResult as $result) {
-            $finalResult[] = $messages[$result];
-            $finalResult[] = $messages[$result]->getDiscussion();
+                    $message = $messageRepo->create();
+                    $discussion = $discussionRepo->create();
+                    $date = new \DateTime('@'.rand(1325376000, 1609459200));
+
+                    $message
+                        ->setContent('Message de test')
+                        ->setAuthor($initiatorId)
+                        ->setSendDate($date)
+                        ->setDiscussion($discussion)
+                    ;
+
+                    $messageRepo->save($message);
+
+                    $discussion
+                        ->setInitiator($initiatorId)
+                        ->setRecipient($recipientId)
+                        ->setUserStatus($initiatorId, new Status($initiator_hidden))
+                        ->setUserStatus($recipientId, new Status($recipient_hidden))
+                    ;
+
+                    $discussionRepo->save($discussion);
+
+                    if($userId !== null && $status !== null) {
+                        if(
+                            (
+                                ($userId === $initiatorId && $initiator_hidden !== Status::HIDDEN) ||
+                                ($userId === $recipientId && $recipient_hidden !== Status::HIDDEN)
+                            ) &&
+                            ($initiator_hidden === $status->getValue() || $recipient_hidden === $status->getValue())
+                        ) {
+                            $expected[] = $message->getSendDate();
+                        }
+                    }
+                    else if($userId !== null) {
+                        if($userId === $initiatorId || $userId === $recipientId) {
+                            $expected[] = $message->getSendDate();
+                        }
+                    }
+                    else if ($status !== null) {
+                        if($initiator_hidden === $status->getValue() || $recipient_hidden === $status->getValue()) {
+                            $expected[] = $message->getSendDate();
+                        }
+                    }
+                    else {
+                        $expected[] = $message->getSendDate();
+                    }
+                }
+            }
+        }
+        rsort($expected);
+
+        foreach ($discussionRepo->getAllOrderedByMessageSendDate($userId, $status) as $discuss) {
+            $queryResult[] = $messageRepo->getLastOfDiscussion($discuss->getId())->getSendDate();
         }
 
-        return $finalResult;
-    }
-
-    public function test_getAllOrderedByMessageSendDate_()
-    {
-        $repos['client'] = new Client();
-        $repos['discuss'] = $repos['client']->getDiscussionRepository();
-        $repos['message'] = $repos['client']->getMessageRepository();
-
-        $message = [
-            $this->generateDiscussionAndMessage(
-                $repos,
-                '10-11-2018',
-                1111,
-                1112,
-                Status::HIDDEN,
-                Status::HIDDEN
-            ),
-            $this->generateDiscussionAndMessage(
-                $repos,
-                '10-11-2019',
-                2221,
-                2222,
-                Status::DISPLAYED,
-                Status::DISPLAYED
-            ),
-            $this->generateDiscussionAndMessage(
-                $repos,
-                '10-11-2020',
-                3331,
-                3332,
-                Status::HIDDEN,
-                Status::DISPLAYED
-            ),
-            $this->generateDiscussionAndMessage(
-                $repos,
-                '10-12-2019',
-                4441,
-                4442,
-                Status::DISPLAYED,
-                Status::HIDDEN
-            ),
+        return [
+            'query' => $queryResult,
+            'expected' => $expected,
         ];
+    }
 
-        // Get discussion without filter
-        $result = [];
-        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3, 1, 0]);
+    public function testGetAllOrderedByMessageSendDateFilterByUserAndStatusSucceed()
+    {
+        $result = $this->generate(1, new Status(Status::DISPLAYED));
+        $this->array($result['query'])->isIdenticalTo($result['expected']);
+    }
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate() as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
+    public function testGetAllOrderedByMessageSendDateFilterByUserOnlySucceed()
+    {
+        $result = $this->generate(2);
+        $this->array($result['query'])->isIdenticalTo($result['expected']);
+    }
+
+    public function testGetAllOrderedByMessageSendDateFilterByStatusOnlySucceed()
+    {
+        $result = $this->generate(null, new Status(Status::HIDDEN));
+        $this->array($result['query'])->isIdenticalTo($result['expected']);
+    }
+
+    public function testGetAllOrderedByMessageSendDatePaginationSucceed()
+    {
+        $client = new Client();
+        $discussionRepo = $client->getDiscussionRepository();
+        $messageRepo = $client->getMessageRepository();
+
+        for($i=0;$i<10;++$i) {
+            $message = $this->createMessage();
+            $discussion = $message->getDiscussion();
+            $messageRepo->save($message);
+            $discussionRepo->save($discussion);
         }
-        $this->array($result)->isIdenticalTo($expected);
 
-        // Get discussion with user filter
-        $result = [];
-        $expected = [];
+        $pager = $discussionRepo->getAllOrderedByMessageSendDate();
+        $this->object($pager)->isInstanceOf('\Countable')->isInstanceOf('\Traversable');
+        //Retrieve All
+        $this->object($pager)
+            ->hasSize(10)
+            ->array(iterator_to_array($pager))->hasSize(10)
+        ;
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(5555) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
+        //Retrieve complete page
+        $pager = $discussionRepo->getAllOrderedByMessageSendDate(null, null, 7);
+        $this->object($pager)
+            ->hasSize(10)
+            ->array(iterator_to_array($pager))->hasSize(7)
+        ;
 
-        $result = [];
-        $expected = $this->getExpectedResultByGivenMessage($message, [0]);
+        //Retrieve incomplete page
+        $pager = $discussionRepo->getAllOrderedByMessageSendDate(null, null, 7, 1);
+        $this->object($pager)
+            ->hasSize(10)
+            ->array(iterator_to_array($pager))->hasSize(3)
+        ;
 
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(1112) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
-
-        $result = [];
-        $expected = [];
-
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(5423651525) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
-
-        // Get discussion with status filter
-        $result = [];
-        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3, 0]);
-
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, new Status(Status::HIDDEN)) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
-
-        $result = [];
-        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3, 1]);
-
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, new Status(Status::DISPLAYED)) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
-
-        //Get discussion test pagination
-        $result = [];
-        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3, 1, 0]);
-
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 5, 0) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
-
-        $result = [];
-        $expected = $this->getExpectedResultByGivenMessage($message, [2, 3]);
-
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 2) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
-
-        $result = [];
-        $expected = $this->getExpectedResultByGivenMessage($message, [1, 0]);
-
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 2, 1) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
-
-        $result = [];
-        $expected = [];
-
-        foreach ($repos['discuss']->getAllOrderedByMessageSendDate(null, null, 5, 4) as $discussion) {
-            $result[] = $repos['message']->getLastOfDiscussion($discussion->getId());
-            $result[] = $discussion;
-        }
-        $this->array($result)->isIdenticalTo($expected);
+        //Retrieve empty page
+        $pager = $discussionRepo->getAllOrderedByMessageSendDate(null, null, 7, 2);
+        $this->object($pager)
+            ->hasSize(10)
+            ->array(iterator_to_array($pager))->hasSize(0)
+        ;
     }
 }
