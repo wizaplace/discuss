@@ -294,14 +294,11 @@ class DiscussionRepository extends RepositoryTest
                     $discussionRepo->save($discussion);
 
                     if ($userId !== null && $status !== null) {
-                        if (
-                            (
+                        if ((
                                 ($userId === $initiatorId && $initiatorHidden !== Status::HIDDEN)
-                                ||
-                                ($userId === $recipientId && $recipientHidden !== Status::HIDDEN)
+                                || ($userId === $recipientId && $recipientHidden !== Status::HIDDEN)
                             )
-                            &&
-                            ($initiatorHidden === $status->getValue() || $recipientHidden === $status->getValue())
+                            && ($initiatorHidden === $status->getValue() || $recipientHidden === $status->getValue())
                         ) {
                             $expected[] = $message->getSendDate();
                         }
