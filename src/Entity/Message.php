@@ -53,7 +53,7 @@ class Message implements MessageInterface
     protected $content;
 
     /**
-     * @ManyToOne(targetEntity="Discussion", cascade={"all"})
+     * @ManyToOne(targetEntity="Discussion", inversedBy="messages", cascade={"all"})
      * @JoinColumn(nullable=false)
      */
     protected $discussion;

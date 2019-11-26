@@ -8,6 +8,8 @@
 namespace Wizacha\Discuss\Repository\tests\unit;
 
 use Wizacha\Discuss\Entity\Discussion\Status;
+use Wizacha\Discuss\Entity\DiscussionInterface;
+use Wizacha\Discuss\Entity\Message;
 use Wizacha\Discuss\Tests\Client;
 use Wizacha\Discuss\Tests\RepositoryTest;
 
@@ -243,6 +245,144 @@ class DiscussionRepository extends RepositoryTest
 
         //Retrieve empty page
         $pager = $repo->getAll(null, null, 7, 2);
+        $this->object($pager)
+            ->hasSize(10)
+            ->array(iterator_to_array($pager))->hasSize(0)
+        ;
+    }
+
+    /**
+     * @param int $userId
+     * @param Status $status
+     *
+     * @return array [result DateTime, expected DateTime]
+     */
+    public function generateMessageAndDiscussion(int $userId = null, Status $status = null): array
+    {
+        $client = new Client();
+        $messageRepo = $client->getMessageRepository();
+        $discussionRepo = $client->getDiscussionRepository();
+        $expected = [];
+        $queryResult = [];
+
+        for ($i = 1; $i <= 3; $i++) {
+            $initiatorId = $i;
+            $recipientId = $i+1;
+            foreach ([Status::DISPLAYED, Status::HIDDEN] as $initiatorHidden) {
+                foreach ([Status::DISPLAYED, Status::HIDDEN] as $recipientHidden) {
+
+                    $message = $messageRepo->create();
+                    $discussion = $discussionRepo->create();
+                    $date = new \DateTime('@'.rand(1325376000, 1609459200));
+
+                    $message
+                        ->setContent('Message de test')
+                        ->setAuthor($initiatorId)
+                        ->setSendDate($date)
+                        ->setDiscussion($discussion)
+                    ;
+
+                    $messageRepo->save($message);
+
+                    $discussion
+                        ->setInitiator($initiatorId)
+                        ->setRecipient($recipientId)
+                        ->setUserStatus($initiatorId, new Status($initiatorHidden))
+                        ->setUserStatus($recipientId, new Status($recipientHidden))
+                    ;
+
+                    $discussionRepo->save($discussion);
+
+                    if ($userId !== null && $status !== null) {
+                        if ((
+                                ($userId === $initiatorId && $initiatorHidden !== Status::HIDDEN)
+                                || ($userId === $recipientId && $recipientHidden !== Status::HIDDEN)
+                            )
+                            && ($initiatorHidden === $status->getValue() || $recipientHidden === $status->getValue())
+                        ) {
+                            $expected[] = $message->getSendDate();
+                        }
+                    } else if ($userId !== null) {
+                        if ($userId === $initiatorId || $userId === $recipientId) {
+                            $expected[] = $message->getSendDate();
+                        }
+                    } else if ($status !== null) {
+                        if ($initiatorHidden === $status->getValue() || $recipientHidden === $status->getValue()) {
+                            $expected[] = $message->getSendDate();
+                        }
+                    } else {
+                        $expected[] = $message->getSendDate();
+                    }
+                }
+            }
+        }
+        rsort($expected);
+
+        foreach ($discussionRepo->getAllOrderedByMessageSendDate($userId, $status) as $discuss) {
+            $queryResult[] = $messageRepo->getLastOfDiscussion($discuss->getId())->getSendDate();
+        }
+
+        return [
+            'query' => $queryResult,
+            'expected' => $expected,
+        ];
+    }
+
+    public function testGetAllOrderedByMessageSendDateFilterByUserAndStatusSucceed()
+    {
+        $result = $this->generateMessageAndDiscussion(1, new Status(Status::DISPLAYED));
+        $this->array($result['query'])->isIdenticalTo($result['expected']);
+    }
+
+    public function testGetAllOrderedByMessageSendDateFilterByUserOnlySucceed()
+    {
+        $result = $this->generateMessageAndDiscussion(2);
+        $this->array($result['query'])->isIdenticalTo($result['expected']);
+    }
+
+    public function testGetAllOrderedByMessageSendDateFilterByStatusOnlySucceed()
+    {
+        $result = $this->generateMessageAndDiscussion(null, new Status(Status::HIDDEN));
+        $this->array($result['query'])->isIdenticalTo($result['expected']);
+    }
+
+    public function testGetAllOrderedByMessageSendDatePaginationSucceed()
+    {
+        $client = new Client();
+        $discussionRepo = $client->getDiscussionRepository();
+        $messageRepo = $client->getMessageRepository();
+
+        for ($i = 0; $i < 10; ++$i) {
+            $message = $this->createMessage();
+            $discussion = $message->getDiscussion();
+            $messageRepo->save($message);
+            $discussionRepo->save($discussion);
+        }
+
+        $pager = $discussionRepo->getAllOrderedByMessageSendDate();
+        $this->object($pager)->isInstanceOf('\Countable')->isInstanceOf('\Traversable');
+        // Retrieve All
+        $this->object($pager)
+            ->hasSize(10)
+            ->array(iterator_to_array($pager))->hasSize(10)
+        ;
+
+        // Retrieve complete page
+        $pager = $discussionRepo->getAllOrderedByMessageSendDate(null, null, 7);
+        $this->object($pager)
+            ->hasSize(10)
+            ->array(iterator_to_array($pager))->hasSize(7)
+        ;
+
+        // Retrieve incomplete page
+        $pager = $discussionRepo->getAllOrderedByMessageSendDate(null, null, 7, 1);
+        $this->object($pager)
+            ->hasSize(10)
+            ->array(iterator_to_array($pager))->hasSize(3)
+        ;
+
+        // Retrieve empty page
+        $pager = $discussionRepo->getAllOrderedByMessageSendDate(null, null, 7, 2);
         $this->object($pager)
             ->hasSize(10)
             ->array(iterator_to_array($pager))->hasSize(0)
