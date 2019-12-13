@@ -167,7 +167,6 @@ class DiscussionRepository extends EntityManagerAware
             ->addSelect('Message')
             ->join('Discussion.messages', 'Message')
             ->orderBy('Message.send_date', 'DESC')
-            ->groupBy('Message.discussion')
         ;
 
         $this->andWhereDiscussionFilter($qb, $user_id, $status);
