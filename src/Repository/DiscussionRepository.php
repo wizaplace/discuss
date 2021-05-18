@@ -81,6 +81,28 @@ class DiscussionRepository extends EntityManagerAware
         ->getQuery()->getOneOrNullResult();
     }
 
+    public function getByCompanyId(int $companyId) {
+        $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
+        $expr = $qb->expr();
+
+        $query = $qb
+            ->join(
+                'Discussion.meta_data',
+                'MetaData'
+            )
+            ->where($expr->eq('MetaData.name', ':name'))
+            ->andWhere($expr->eq('MetaData.value', ':company_id'))
+            ->setParameters(
+                [
+                    'name'       => 'company_id',
+                    'company_id' => $companyId,
+                ]
+            )
+            ->getQuery();
+
+        return new Paginator($query);
+    }
+
     /**
      * @return \Wizacha\Discuss\Entity\DiscussionInterface
      */
