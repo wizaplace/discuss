@@ -81,7 +81,7 @@ class DiscussionRepository extends EntityManagerAware
         ->getQuery()->getOneOrNullResult();
     }
 
-    public function getByCompanyIdAndUserId(int $companyId, int $userId) {
+    public function getByCompanyIdOrUserId(int $companyId, int $userId) {
         $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
         $expr = $qb->expr();
 
