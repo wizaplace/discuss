@@ -81,7 +81,7 @@ class DiscussionRepository extends EntityManagerAware
         ->getQuery()->getOneOrNullResult();
     }
 
-    public function getByCompanyId(int $companyId) {
+    public function getByCompanyIdAndUser(int $companyId, int $userId) {
         $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
         $expr = $qb->expr();
 
@@ -90,12 +90,18 @@ class DiscussionRepository extends EntityManagerAware
                 'Discussion.meta_data',
                 'MetaData'
             )
-            ->where($expr->eq('MetaData.name', ':name'))
-            ->andWhere($expr->eq('MetaData.value', ':company_id'))
+            -> join(
+                'Discussion.users',
+                'DiscussionUser'
+            )
+            ->where($expr->andX($expr->eq('MetaData.name', ':name'),$expr->eq('MetaData.value', ':company_id')))
+            ->orWhere($expr->andX($expr->eq('DiscussionUser.user_id', ':user_id'), $expr->eq('DiscussionUser.status', ':status')))
             ->setParameters(
                 [
                     'name'       => 'company_id',
                     'company_id' => $companyId,
+                    'user_id' => $userId,
+                    'status' =>  new Status(Status::DISPLAYED)
                 ]
             )
             ->getQuery();
