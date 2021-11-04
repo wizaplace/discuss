@@ -244,4 +244,36 @@ class DiscussionRepository extends EntityManagerAware
 
         return $queryBuilder;
     }
+
+    /**
+     * Get a discussion by order Id
+     *
+     * @param integer $orderId
+     *
+     * @return DiscussionInterface | null
+     *
+     * @throws \Exception
+     */
+    public function getByOrderId(int $orderId)
+    {
+        $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
+        $expr = $qb->expr();
+
+        $query = $qb
+            ->join(
+                'Discussion.meta_data',
+                'MetaData'
+            )
+            ->where($expr->eq('MetaData.name', ':name'))
+            ->andWhere($expr->eq('MetaData.value', ':orderId'))
+            ->setParameters(
+                [
+                    'name'    => 'order_id',
+                    'orderId' => $orderId,
+                ]
+            )
+            ->getQuery();
+
+        return $query->getOneOrNullResult();
+    }
 }
