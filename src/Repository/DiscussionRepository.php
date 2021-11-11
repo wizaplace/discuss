@@ -193,7 +193,7 @@ class DiscussionRepository extends EntityManagerAware
         $qb
             ->select('Discussion')
             ->addSelect('Message')
-            ->leftJoin('Discussion.messages', 'Message')
+            ->join('Discussion.messages', 'Message')
             ->orderBy('Message.send_date', 'DESC')
         ;
 
