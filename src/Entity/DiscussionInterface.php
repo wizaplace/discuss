@@ -67,11 +67,11 @@ interface DiscussionInterface
     public function setOpen($open);
 
     /**
-     * Hide the discussion for a user. Do nothing if the user is not implied in discussion
-     * @param integer $user_id
+     * Hide the discussion for all users
+     *
      * @return $this
      */
-    public function hideDiscussion($user_id);
+    public function hideDiscussion();
 
     /**
      * @param int $user_id
@@ -79,6 +79,12 @@ interface DiscussionInterface
      * @return $this
      */
     public function setUserStatus($user_id, Status $status);
+
+    /**
+     * @param Status $status
+     * @return $this
+     */
+    public function setAllUsersStatus(Status $status);
 
     /**
      * @return \Wizacha\Discuss\Entity\Discussion\Status
