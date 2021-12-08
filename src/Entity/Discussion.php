@@ -179,9 +179,9 @@ class Discussion implements DiscussionInterface
     /**
      * @inheritdoc
      */
-    public function hideDiscussion($user_id)
+    public function hideDiscussion()
     {
-        return $this->setUserStatus($user_id, new Status(Status::HIDDEN));
+        return $this->setAllUsersStatus(new Status(Status::HIDDEN));
     }
 
     /**
@@ -194,6 +194,13 @@ class Discussion implements DiscussionInterface
             $this->users[$user_id]->setStatus($status);
         }
         return $this;
+    }
+
+    public function setAllUsersStatus(Status $status)
+    {
+        foreach ($this->users as $user) {
+            $user->setStatus($status);
+        }
     }
 
     /**

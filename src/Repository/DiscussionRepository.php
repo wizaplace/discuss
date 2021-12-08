@@ -210,6 +210,39 @@ class DiscussionRepository extends EntityManagerAware
     }
 
     /**
+     * Gets displayed discussions for a specific company
+     *
+     * @param int $companyId
+     * @return Paginator
+     */
+    public function getByCompanyId(int $companyId) {
+        $qb   = $this->_getRepo()->createQueryBuilder('Discussion');
+        $expr = $qb->expr();
+
+        $query = $qb
+            ->join(
+                'Discussion.meta_data',
+                'MetaData'
+            )
+            -> join(
+                'Discussion.users',
+                'DiscussionUser'
+            )
+            ->where($expr->andX($expr->eq('MetaData.name', ':name'),$expr->eq('MetaData.value', ':company_id')))
+            ->andWhere($expr->eq('DiscussionUser.status', ':status'))
+            ->setParameters(
+                [
+                    'name'       => 'company_id',
+                    'company_id' => $companyId,
+                    'status' =>  new Status(Status::DISPLAYED)
+                ]
+            )
+            ->getQuery();
+
+        return new Paginator($query);
+    }
+
+    /**
      * **INTERNAL USE ONLY**
      * Modify a query to filter visible discussion of a user
      *
