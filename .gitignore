@@ -4,3 +4,4 @@ config/discuss.config.php
 tests/junit.xml
 
 composer.phar
+composer.lock
