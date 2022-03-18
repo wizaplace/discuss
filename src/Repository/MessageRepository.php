@@ -80,8 +80,8 @@ class MessageRepository extends EntityManagerAware
 
         if ($is_new) {
             $this->_client->getEventDispatcher()->dispatch(
-                DiscussEvents::MESSAGE_NEW,
-                new MessageEvent($message)
+                new MessageEvent($message),
+                DiscussEvents::MESSAGE_NEW
             );
         }
         return $message->getId();
