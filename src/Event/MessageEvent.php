@@ -14,7 +14,7 @@ use Wizacha\Discuss\Entity\MessageInterface;
  * Class MessageEvent
  * @package Wizacha\Discuss\Event
  */
-class MessageEvent extends Event
+class MessageEvent extends GenericEvent
 {
     /**
      * @var MessageInterface
