@@ -7,7 +7,7 @@
 
 namespace Wizacha\Discuss\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\GenericEvent;
 use Wizacha\Discuss\Entity\MessageInterface;
 
 /**
